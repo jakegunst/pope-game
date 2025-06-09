@@ -100,7 +100,7 @@ function draw() {
  */
 function drawDebugInfo() {
     // Set text properties
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = 'black';  // Changed to black so it shows on light background
     ctx.font = '16px Arial';
     
     // Draw FPS counter in top-left corner
