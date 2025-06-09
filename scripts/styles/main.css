@@ -5,24 +5,31 @@
     box-sizing: border-box;
 }
 
+/* Force HTML to full height */
+html {
+    height: 100%;
+}
+
 /* Style the body */
 body {
-    background-color: #2a2a2a;
+    background-color: #2a2a2a !important;  /* Force dark gray */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     font-family: Arial, sans-serif;
+    margin: 0;  /* Extra insurance against margins */
 }
 
 /* Style the game container */
 #game-container {
     border: 2px solid #444;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    background-color: #87CEEB;  /* Sky blue background */
 }
 
 /* Style the canvas */
 #gameCanvas {
-    background-color: #87CEEB;
     display: block;
+    background-color: #87CEEB !important;  /* Force sky blue */
 }
