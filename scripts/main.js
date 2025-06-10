@@ -9,6 +9,7 @@ let canvas;
 let ctx; // ctx stands for "context" - our drawing tool
 let lastTime = 0; // For calculating FPS
 let fps = 0; // Frames per second counter
+let physics; // Physics system
 
 // Player object - will be initialized after loading player.js
 let player;
@@ -35,7 +36,11 @@ function init() {
     canvas.width = 960;
     canvas.height = 640;
     
-    // Create player instance (from player.js)
+    // Create physics system FIRST
+    window.physics = new Physics(); // Make it globally accessible immediately
+    physics = window.physics; // Keep local reference too
+    
+    // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
     
     // Set up keyboard event listeners
@@ -88,9 +93,9 @@ function update() {
     // Update player
     player.update();
     
-    // Apply gravity (will be moved to physics.js later)
+    // Apply gravity using physics system
     if (!player.isGrounded) {
-        player.speedY += 0.5;  // Gravity force
+        physics.applyGravity(player);
     }
     
     // Temporary ground collision (will be moved to collision-detection.js)
