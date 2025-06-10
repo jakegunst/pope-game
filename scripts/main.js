@@ -10,14 +10,8 @@ let ctx; // ctx stands for "context" - our drawing tool
 let lastTime = 0; // For calculating FPS
 let fps = 0; // Frames per second counter
 
-// Player object - temporary until we create player.js
-let player = {
-    x: 50,          // Start 50 pixels from left edge
-    y: 0,           // Will be set once canvas loads
-    width: 32,      // Player width in pixels
-    height: 64,     // Player height in pixels  
-    color: '#D2B48C' // Tan color in hex code
-};
+// Player object - will be initialized after loading player.js
+let player;
 
 /**
  * Initialize the game
@@ -41,8 +35,18 @@ function init() {
     canvas.width = 960;
     canvas.height = 640;
     
-    // Set player starting position (bottom-left, but above ground)
-    player.y = canvas.height - player.height - 60; // 60 pixels up from bottom for ground
+    // Create player instance (from player.js)
+    player = new Player(50, canvas.height - 64 - 60);
+    
+    // Set up keyboard event listeners
+    window.addEventListener('keydown', (e) => {
+        player.handleKeyDown(e.key);
+        e.preventDefault(); // Prevent page scrolling with arrow keys
+    });
+    
+    window.addEventListener('keyup', (e) => {
+        player.handleKeyUp(e.key);
+    });
     
     // Log successful initialization
     console.log('Game initialized successfully!');
@@ -66,11 +70,31 @@ function gameLoop(currentTime) {
     // Clear the entire canvas for fresh drawing
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Update game logic
+    update();
+    
     // Draw everything
     draw();
     
     // Request next frame (this creates our 60 FPS loop)
     requestAnimationFrame(gameLoop);
+}
+
+/**
+ * Update all game logic
+ * This is called 60 times per second
+ */
+function update() {
+    // Update player
+    player.update();
+    
+    // Temporary ground collision (will be moved to collision-detection.js)
+    if (player.y + player.height > canvas.height - 60) {
+        player.y = canvas.height - 60 - player.height;
+        player.setGrounded(true);
+    } else {
+        player.setGrounded(false);
+    }
 }
 
 /**
@@ -87,8 +111,7 @@ function draw() {
     ctx.stroke();
     
     // Draw player rectangle
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    player.draw(ctx);
     
     // Draw debug info (FPS and coordinates)
     drawDebugInfo();
@@ -100,7 +123,7 @@ function draw() {
  */
 function drawDebugInfo() {
     // Set text properties
-    ctx.fillStyle = 'black';  // Changed to black so it shows on light background
+    ctx.fillStyle = 'white';
     ctx.font = '16px Arial';
     
     // Draw FPS counter in top-left corner
