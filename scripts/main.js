@@ -88,6 +88,11 @@ function update() {
     // Update player
     player.update();
     
+    // Apply gravity (will be moved to physics.js later)
+    if (!player.isGrounded) {
+        player.speedY += 0.5;  // Gravity force
+    }
+    
     // Temporary ground collision (will be moved to collision-detection.js)
     if (player.y + player.height > canvas.height - 60) {
         player.y = canvas.height - 60 - player.height;
