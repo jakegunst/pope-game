@@ -11,11 +11,6 @@ class Player {
         // Movement properties
         this.speedX = 0;  // Current horizontal velocity
         this.speedY = 0;  // Current vertical velocity
-        this.maxSpeedX = 5;  // Maximum horizontal speed (mid-fast)
-        this.acceleration = 0.5;  // How quickly we reach max speed
-        this.friction = 0.2;  // Sliding effect when stopping
-        this.jumpPower = -12;  // Negative because up is negative Y
-        this.runJumpBonus = 1.3;  // 30% higher jump when running full speed
         
         // State machine
         this.state = 'idle';  // Current state
@@ -107,24 +102,18 @@ class Player {
      * Called every frame from main.js
      */
     update() {
-        // Handle horizontal movement
-        if (this.keys.left) {
-            this.speedX -= this.acceleration;
-            this.facingRight = false;
-        } else if (this.keys.right) {
-            this.speedX += this.acceleration;
-            this.facingRight = true;
-        } else {
-            // Apply friction when not moving
-            if (Math.abs(this.speedX) > 0.1) {
-                this.speedX *= (1 - this.friction);
-            } else {
-                this.speedX = 0;
-            }
+        // Get input direction
+        let inputDirection = 0;
+        if (this.keys.left) inputDirection = -1;
+        if (this.keys.right) inputDirection = 1;
+        
+        // Update facing direction
+        if (inputDirection !== 0) {
+            this.facingRight = inputDirection > 0;
         }
         
-        // Limit horizontal speed
-        this.speedX = Math.max(-this.maxSpeedX, Math.min(this.maxSpeedX, this.speedX));
+        // Use physics system for movement
+        window.physics.applyMovement(this, inputDirection);
         
         // Handle jumping
         if (this.keys.up && this.hasReleasedJump) {
@@ -162,17 +151,9 @@ class Player {
     
     /**
      * Make the player jump
-     * Includes running jump bonus
      */
     jump() {
-        let jumpModifier = 1;
-        
-        // If running at near-full speed, jump higher/further
-        if (Math.abs(this.speedX) > this.maxSpeedX * 0.8) {
-            jumpModifier = this.runJumpBonus;
-        }
-        
-        this.speedY = this.jumpPower * jumpModifier;
+        this.speedY = window.physics.playerJumpPower;
         this.isGrounded = false;
     }
     
