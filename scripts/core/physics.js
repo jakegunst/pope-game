@@ -9,8 +9,8 @@ class Physics {
         // Movement settings (moved here from player for easy tweaking)
         this.playerMaxSpeed = 7;  // Increased from 5 for faster movement
         this.playerAcceleration = 0.8;  // Increased from 0.5 for snappier control
-        this.playerFriction = 0.2;  // How quickly player stops
-        this.playerJumpPower = -10;  // Reduced from -12 for lower jumps
+        this.playerFriction = 0.35;  // Increased from 0.2 for less sliding
+        this.playerJumpPower = -15;  // Increased from -10 (50% higher jump)
         
         // Wall physics
         this.wallSlideSpeed = 2;  // Maximum speed when sliding down wall
