@@ -19,6 +19,8 @@ let player;
  * This runs once when the page loads
  */
 function init() {
+    console.log('Physics class exists?', typeof Physics);
+    console.log('Window.physics before creation?', window.physics);
     // Find our canvas element by its ID
     canvas = document.getElementById('gameCanvas');
     
@@ -38,6 +40,8 @@ function init() {
     
     // Create physics system FIRST
     window.physics = new Physics(); // Make it globally accessible immediately
+    console.log('Window.physics after creation?', window.physics);
+    console.log('Has applyMovement?', window.physics.applyMovement);
     physics = window.physics; // Keep local reference too
     
     // Create player instance AFTER physics is ready
