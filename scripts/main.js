@@ -11,6 +11,7 @@ let lastTime = 0; // For calculating FPS
 let fps = 0; // Frames per second counter
 let physics; // Physics system
 let collisionDetection; // Collision system
+let gameEngine; // Main game engine
 
 // Player object - will be initialized after loading player.js
 let player;
@@ -51,22 +52,27 @@ function init() {
     // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
     
-    // Create some test platforms
-    platforms = [
-        // Ground
-        { x: 0, y: canvas.height - 60, width: canvas.width, height: 60, type: 'solid' },
-        
-        // Some platforms to jump on
-        { x: 200, y: 450, width: 100, height: 20, type: 'solid' },
-        { x: 400, y: 350, width: 80, height: 20, type: 'oneway' },
-        { x: 600, y: 400, width: 120, height: 20, type: 'bouncy_platform' },
-        { x: 350, y: 250, width: 60, height: 20, type: 'platform_r_slow' }
-    ];
+    // Create game engine
+    gameEngine = new GameEngine(canvas, ctx);
+    
+    // Load test level
+    gameEngine.init('data/levels/test-level.json').then(success => {
+        if (success) {
+            console.log('Game engine initialized!');
+            // Start the game loop
+            gameLoop(0);
+        } else {
+            console.error('Failed to initialize game engine');
+        }
+    });
     
     // Set up keyboard event listeners
     window.addEventListener('keydown', (e) => {
         player.handleKeyDown(e.key);
-        e.preventDefault(); // Prevent page scrolling with arrow keys
+        // Don't prevent default for debug keys
+        if (!e.key.startsWith('F')) {
+            e.preventDefault();
+        }
     });
     
     window.addEventListener('keyup', (e) => {
@@ -76,9 +82,6 @@ function init() {
     // Log successful initialization
     console.log('Game initialized successfully!');
     console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
-    
-    // Start the game loop
-    gameLoop(0);
 }
 
 /**
@@ -110,6 +113,9 @@ function gameLoop(currentTime) {
  * This is called 60 times per second
  */
 function update() {
+    // Let game engine handle everything
+    gameEngine.update();
+    
     // Update player
     player.update();
     
@@ -121,8 +127,12 @@ function update() {
     // Reset grounded state (will be set by collisions)
     player.setGrounded(false);
     
+    // Get platforms from current level
+    const levelPlatforms = gameEngine.currentLevel ? 
+        gameEngine.currentLevel.platforms : platforms;
+    
     // Check collisions with all platforms
-    platforms.forEach(platform => {
+    levelPlatforms.forEach(platform => {
         const collision = collisionDetection.checkRectCollision(player, platform);
         if (collision) {
             collisionDetection.handlePlatformCollision(player, platform, collision);
@@ -130,14 +140,14 @@ function update() {
     });
     
     // Update moving platforms
-    platforms.forEach(platform => {
+    levelPlatforms.forEach(platform => {
         const platType = collisionDetection.platformTypes[platform.type];
         if (platType && platType.dirX !== undefined) {
             // Move the platform
             platform.x += platType.dirX * platType.speed;
             
             // Reverse at boundaries (temporary)
-            if (platform.x < 0 || platform.x + platform.width > canvas.width) {
+            if (platform.x < 0 || platform.x + platform.width > gameEngine.currentLevel.pixelWidth) {
                 platType.dirX *= -1;
             }
         }
@@ -149,35 +159,15 @@ function update() {
  * This is called 60 times per second
  */
 function draw() {
-    // Draw platforms
-    platforms.forEach(platform => {
-        // Different colors for different platform types
-        switch(platform.type) {
-            case 'bouncy_platform':
-            case 'super_bouncy_platform':
-                ctx.fillStyle = '#FF69B4';  // Hot pink for bouncy
-                break;
-            case 'oneway':
-                ctx.fillStyle = '#87CEEB';  // Sky blue for one-way
-                break;
-            case 'platform_r_slow':
-            case 'platform_l_slow':
-                ctx.fillStyle = '#FFD700';  // Gold for moving
-                break;
-            default:
-                ctx.fillStyle = '#654321';  // Brown for solid
-        }
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-    });
+    // Let game engine handle all rendering
+    gameEngine.render();
     
-    // Draw player
-    player.draw(ctx);
-    
-    // Draw collision debug info
-    collisionDetection.drawDebug(ctx, [...platforms, player]);
-    
-    // Draw debug info (FPS and coordinates)
-    drawDebugInfo();
+    // Draw debug info (FPS) - now part of game engine HUD
+    if (gameEngine.debug.showStats) {
+        ctx.fillStyle = 'lime';
+        ctx.font = '16px Arial';
+        ctx.fillText(`FPS: ${fps}`, 10, 110);
+    }
 }
 
 /**
