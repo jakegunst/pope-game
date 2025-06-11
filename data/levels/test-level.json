@@ -1,0 +1,33 @@
+{
+  "name": "Test Level",
+  "width": 30,
+  "height": 20,
+  
+  "goal": {
+    "type": "reach_exit",
+    "position": { "x": 28, "y": 10 }
+  },
+  
+  "playerStart": { "x": 2, "y": 17 },
+  
+  "platforms": [
+    {"x": 0, "y": 18, "width": 30, "height": 2, "type": "solid"},
+    {"x": 5, "y": 16, "width": 4, "height": 1, "type": "solid"},
+    {"x": 10, "y": 14, "width": 3, "height": 1, "type": "bouncy_platform"},
+    {"x": 15, "y": 15, "width": 5, "height": 1, "type": "platform_r_slow"},
+    {"x": 8, "y": 12, "width": 4, "height": 1, "type": "oneway"},
+    {"x": 20, "y": 13, "width": 3, "height": 1, "type": "solid"},
+    {"x": 25, "y": 11, "width": 4, "height": 1, "type": "solid"}
+  ],
+  
+  "collectibles": [
+    {"x": 6, "y": 15, "type": "coin", "value": 10},
+    {"x": 11, "y": 13, "type": "coin", "value": 10},
+    {"x": 21, "y": 12, "type": "coin", "value": 10}
+  ],
+  
+  "checkpoints": [
+    {"x": 10, "y": 17},
+    {"x": 20, "y": 17}
+  ]
+}
