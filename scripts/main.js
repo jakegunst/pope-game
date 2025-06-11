@@ -52,18 +52,7 @@ function init() {
     // Create game engine
     gameEngine = new GameEngine(canvas, ctx);
     
-    // Load test level
-    gameEngine.init('data/levels/test-level.json').then(success => {
-        if (success) {
-            console.log('Game engine initialized!');
-            // Start the game loop
-            gameLoop(0);
-        } else {
-            console.error('Failed to initialize game engine');
-        }
-    });
-    
-    // Set up keyboard event listeners
+    // Set up keyboard event listeners AFTER game engine exists
     window.addEventListener('keydown', (e) => {
         // Only handle player input if not in free camera mode
         if (!gameEngine.debug.freeCamera) {
@@ -79,6 +68,17 @@ function init() {
         // Only handle player input if not in free camera mode
         if (!gameEngine.debug.freeCamera) {
             player.handleKeyUp(e.key);
+        }
+    });
+    
+    // Load test level
+    gameEngine.init('data/levels/test-level.json').then(success => {
+        if (success) {
+            console.log('Game engine initialized!');
+            // Start the game loop
+            gameLoop(0);
+        } else {
+            console.error('Failed to initialize game engine');
         }
     });
     
