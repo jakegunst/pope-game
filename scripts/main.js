@@ -122,11 +122,6 @@ function update() {
     // Update player
     player.update();
     
-    // Apply gravity using physics system
-    if (!player.isGrounded) {
-        physics.applyGravity(player);
-    }
-    
     // Reset grounded state (will be set by collisions)
     player.setGrounded(false);
     
