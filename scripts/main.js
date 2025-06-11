@@ -16,9 +16,6 @@ let gameEngine; // Main game engine
 // Player object - will be initialized after loading player.js
 let player;
 
-// Temporary platforms for testing
-let platforms = [];
-
 /**
  * Initialize the game
  * This runs once when the page loads
@@ -68,7 +65,10 @@ function init() {
     
     // Set up keyboard event listeners
     window.addEventListener('keydown', (e) => {
-        player.handleKeyDown(e.key);
+        // Only handle player input if not in free camera mode
+        if (!gameEngine.debug.freeCamera) {
+            player.handleKeyDown(e.key);
+        }
         // Don't prevent default for debug keys
         if (!e.key.startsWith('F')) {
             e.preventDefault();
@@ -76,7 +76,10 @@ function init() {
     });
     
     window.addEventListener('keyup', (e) => {
-        player.handleKeyUp(e.key);
+        // Only handle player input if not in free camera mode
+        if (!gameEngine.debug.freeCamera) {
+            player.handleKeyUp(e.key);
+        }
     });
     
     // Log successful initialization
@@ -129,7 +132,16 @@ function update() {
     
     // Get platforms from current level
     const levelPlatforms = gameEngine.currentLevel ? 
-        gameEngine.currentLevel.platforms : platforms;
+        gameEngine.currentLevel.platforms : [];
+    
+    // Debug: log platform count once
+    if (!window.platformsLogged) {
+        console.log('Number of platforms:', levelPlatforms.length);
+        levelPlatforms.forEach((p, i) => {
+            console.log(`Platform ${i}: ${p.type} at ${p.x},${p.y}`);
+        });
+        window.platformsLogged = true;
+    }
     
     // Check collisions with all platforms
     levelPlatforms.forEach(platform => {
