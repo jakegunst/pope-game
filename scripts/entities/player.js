@@ -170,8 +170,11 @@ class Player {
             this.state = 'walking';
         } else if (this.idleTimer > 300) {  // 5 seconds at 60fps
             this.state = 'longIdle';
-        } else {
+        } else if (this.isGrounded) {  // Make sure we're grounded for idle
             this.state = 'idle';
+        } else {
+            // Default to falling if not grounded and not moving much
+            this.state = Math.abs(this.speedY) < 0.5 ? 'idle' : 'falling';
         }
     }
     
