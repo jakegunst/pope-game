@@ -1,10 +1,4 @@
-// Restart key
-            if (e.key === 'r' || e.key === 'R') {
-                if (this.currentState === this.states.VICTORY || 
-                    this.currentState === this.states.GAME_OVER) {
-                    this.restartLevel();
-                }
-            }// game-engine.js - Core game engine that manages everything
+// game-engine.js - Core game engine that manages everything
 
 class GameEngine {
     constructor(canvas, ctx) {
@@ -560,7 +554,15 @@ class GameEngine {
                     this.currentState = this.states.PLAYING;
                 }
             }
-            
+
+            // Restart key
+            if (e.key === 'r' || e.key === 'R') {
+                if (this.currentState === this.states.VICTORY || 
+                    this.currentState === this.states.GAME_OVER) {
+                    this.restartLevel();
+                }
+            }
+                    
             // Debug keys
             if (e.key === 'F1') this.debug.enabled = !this.debug.enabled;
             if (e.key === 'F2') this.debug.freeCamera = !this.debug.freeCamera;
