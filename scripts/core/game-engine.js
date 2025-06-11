@@ -1,4 +1,10 @@
-// game-engine.js - Core game engine that manages everything
+// Restart key
+            if (e.key === 'r' || e.key === 'R') {
+                if (this.currentState === this.states.VICTORY || 
+                    this.currentState === this.states.GAME_OVER) {
+                    this.restartLevel();
+                }
+            }// game-engine.js - Core game engine that manages everything
 
 class GameEngine {
     constructor(canvas, ctx) {
@@ -371,6 +377,12 @@ class GameEngine {
             case this.states.BOSS_FIGHT:
                 this.renderGame();
                 break;
+            case this.states.VICTORY:
+                this.renderVictory();
+                break;
+            case this.states.GAME_OVER:
+                this.renderGameOver();
+                break;
         }
         
         // Restore context
@@ -439,7 +451,19 @@ class GameEngine {
         };
         
         this.ctx.fillStyle = colors[platform.type] || '#808080';
-        this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        
+        // One-way platforms are semi-transparent
+        if (platform.type === 'oneway') {
+            this.ctx.globalAlpha = 0.6;
+            this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            // Draw arrows to show it's one-way
+            this.ctx.globalAlpha = 1;
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = '12px Arial';
+            this.ctx.fillText('↑↑↑', platform.x + platform.width/2 - 10, platform.y + platform.height/2);
+        } else {
+            this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        }
     }
     
     /**
@@ -654,16 +678,79 @@ class GameEngine {
     }
     
     updateGameOver() {
-        // TODO: Implement game over screen
+        // For now, just wait for restart
+        // TODO: Implement full game over screen
+    }
+    
+    /**
+     * Render game over screen
+     */
+    renderGameOver() {
+        // Dark screen
+        this.ctx.fillStyle = '#2a2a2a';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Game over message
+        this.ctx.fillStyle = 'red';
+        this.ctx.font = '48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('GAME OVER', this.canvas.width/2, this.canvas.height/2);
+        
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Press R to restart', this.canvas.width/2, this.canvas.height/2 + 60);
+        
+        this.ctx.textAlign = 'left';
     }
     
     updateVictory() {
-        // TODO: Implement victory screen
+        // For now, just show victory message
+        // TODO: Implement full victory screen with stats
+    }
+    
+    /**
+     * Render victory screen
+     */
+    renderVictory() {
+        // Fill screen with celebration color
+        this.ctx.fillStyle = 'gold';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Victory message
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('LEVEL COMPLETE!', this.canvas.width/2, this.canvas.height/2);
+        
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Press R to restart', this.canvas.width/2, this.canvas.height/2 + 60);
+        
+        this.ctx.textAlign = 'left';
     }
     
     skipLevel() {
         console.log('Skipping to next level...');
         // TODO: Load next level
+    }
+    
+    /**
+     * Restart the current level
+     */
+    restartLevel() {
+        // Reset player stats
+        this.playerStats.lives = 3;
+        this.playerStats.health = this.playerStats.maxHealth;
+        
+        // Reset level state
+        this.levelTime = 0;
+        this.levelLoader.currentCheckpoint = 0;
+        this.levelLoader.collectedItems.clear();
+        
+        // Respawn player
+        this.respawnPlayer();
+        
+        // Reset state
+        this.currentState = this.states.PLAYING;
     }
 }
 
