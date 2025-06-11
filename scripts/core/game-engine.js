@@ -440,7 +440,7 @@ class GameEngine {
         const colors = {
             'solid': '#654321',
             'bouncy_platform': '#FF69B4',
-            'oneway': '#87CEEB',
+            'oneway': '#90EE90',
             'platform_r_slow': '#FFD700'
         };
         
