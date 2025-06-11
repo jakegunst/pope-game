@@ -1,0 +1,86 @@
+{
+  "name": "Peru - Mountain Ascent",
+  "width": 40,
+  "height": 25,
+  "tileset": "peru-tileset",
+  
+  "goal": {
+    "type": "reach_exit",
+    "position": { "x": 38, "y": 3 },
+    "requirements": {}
+  },
+  
+  "playerStart": { "x": 2, "y": 20 },
+  
+  "music": {
+    "track": "peru-theme.mp3",
+    "ambient": ["birds.mp3", "wind.mp3"]
+  },
+  
+  "weather": {
+    "type": "fog",
+    "intensity": 0.3
+  },
+  
+  "background": {
+    "layers": [
+      {
+        "image": "peru-mountains-far.png",
+        "speed": 0.2,
+        "repeat": true
+      },
+      {
+        "image": "peru-mountains-mid.png", 
+        "speed": 0.5,
+        "repeat": true
+      },
+      {
+        "image": "clouds.png",
+        "speed": 0.3,
+        "animated": true,
+        "animations": ["drift"]
+      }
+    ]
+  },
+  
+  "platforms": [
+    {"x": 0, "y": 22, "width": 15, "height": 3, "type": "solid"},
+    {"x": 5, "y": 19, "width": 4, "height": 1, "type": "solid"},
+    {"x": 10, "y": 17, "width": 3, "height": 1, "type": "bouncy_platform"},
+    {"x": 8, "y": 14, "width": 5, "height": 1, "type": "platform_r_slow"},
+    {"x": 15, "y": 12, "width": 3, "height": 1, "type": "oneway"},
+    
+    {
+      "x": 500,
+      "y": 400, 
+      "width": 128,
+      "height": 20,
+      "type": "platform_balance"
+    },
+    
+    {"tile": {"x": 25, "y": 10}, "width": 4, "height": 1, "type": "crumbling"}
+  ],
+  
+  "enemies": [
+    {"x": 12, "y": 21, "type": "snake", "patrol": true},
+    {"x": 20, "y": 15, "type": "bird", "flying": true}
+  ],
+  
+  "collectibles": [
+    {"x": 7, "y": 18, "type": "coin", "value": 10},
+    {"x": 10, "y": 13, "type": "coin", "value": 10},
+    {"x": 15, "y": 11, "type": "powerup", "power": "speed"},
+    {"x": 35, "y": 5, "type": "treasure", "id": "golden_cross"}
+  ],
+  
+  "checkpoints": [
+    {"x": 10, "y": 17},
+    {"x": 20, "y": 12},
+    {"x": 30, "y": 8}
+  ],
+  
+  "hazards": [
+    {"x": 18, "y": 22, "width": 3, "height": 1, "type": "spikes"},
+    {"x": 25, "y": 18, "width": 2, "height": 1, "type": "spikes"}
+  ]
+}
