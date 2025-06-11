@@ -162,11 +162,11 @@ class Player {
      */
     updateState() {
         // Determine current state
-        if (this.speedY < 0) {
+        if (this.speedY < -0.5) {  // Add threshold for jumping
             this.state = 'jumping';
-        } else if (this.speedY > 0 && !this.isGrounded) {
+        } else if (this.speedY > 0.5 && !this.isGrounded) {  // Add threshold for falling
             this.state = 'falling';
-        } else if (Math.abs(this.speedX) > 0.5) {  // Changed from 0.1 to 0.5 for dead zone
+        } else if (Math.abs(this.speedX) > 0.5) {  // Already has threshold
             this.state = 'walking';
         } else if (this.idleTimer > 300) {  // 5 seconds at 60fps
             this.state = 'longIdle';
