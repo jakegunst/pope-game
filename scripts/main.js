@@ -10,17 +10,19 @@ let ctx; // ctx stands for "context" - our drawing tool
 let lastTime = 0; // For calculating FPS
 let fps = 0; // Frames per second counter
 let physics; // Physics system
+let collisionDetection; // Collision system
 
 // Player object - will be initialized after loading player.js
 let player;
+
+// Temporary platforms for testing
+let platforms = [];
 
 /**
  * Initialize the game
  * This runs once when the page loads
  */
 function init() {
-    console.log('Physics class exists?', typeof Physics);
-    console.log('Window.physics before creation?', window.physics);
     // Find our canvas element by its ID
     canvas = document.getElementById('gameCanvas');
     
@@ -40,12 +42,26 @@ function init() {
     
     // Create physics system FIRST
     window.physics = new Physics(); // Make it globally accessible immediately
-    console.log('Window.physics after creation?', window.physics);
-    console.log('Has applyMovement?', window.physics.applyMovement);
     physics = window.physics; // Keep local reference too
+    
+    // Create collision detection system
+    window.collisionDetection = new CollisionDetection();
+    collisionDetection = window.collisionDetection;
     
     // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
+    
+    // Create some test platforms
+    platforms = [
+        // Ground
+        { x: 0, y: canvas.height - 60, width: canvas.width, height: 60, type: 'solid' },
+        
+        // Some platforms to jump on
+        { x: 200, y: 450, width: 100, height: 20, type: 'solid' },
+        { x: 400, y: 350, width: 80, height: 20, type: 'oneway' },
+        { x: 600, y: 400, width: 120, height: 20, type: 'bouncy_platform' },
+        { x: 350, y: 250, width: 60, height: 20, type: 'platform_r_slow' }
+    ];
     
     // Set up keyboard event listeners
     window.addEventListener('keydown', (e) => {
@@ -102,13 +118,30 @@ function update() {
         physics.applyGravity(player);
     }
     
-    // Temporary ground collision (will be moved to collision-detection.js)
-    if (player.y + player.height > canvas.height - 60) {
-        player.y = canvas.height - 60 - player.height;
-        player.setGrounded(true);
-    } else {
-        player.setGrounded(false);
-    }
+    // Reset grounded state (will be set by collisions)
+    player.setGrounded(false);
+    
+    // Check collisions with all platforms
+    platforms.forEach(platform => {
+        const collision = collisionDetection.checkRectCollision(player, platform);
+        if (collision) {
+            collisionDetection.handlePlatformCollision(player, platform, collision);
+        }
+    });
+    
+    // Update moving platforms
+    platforms.forEach(platform => {
+        const platType = collisionDetection.platformTypes[platform.type];
+        if (platType && platType.dirX !== undefined) {
+            // Move the platform
+            platform.x += platType.dirX * platType.speed;
+            
+            // Reverse at boundaries (temporary)
+            if (platform.x < 0 || platform.x + platform.width > canvas.width) {
+                platType.dirX *= -1;
+            }
+        }
+    });
 }
 
 /**
@@ -116,16 +149,32 @@ function update() {
  * This is called 60 times per second
  */
 function draw() {
-    // Draw ground line (simple brown line for now)
-    ctx.strokeStyle = '#654321'; // Brown color
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 60); // Start line 60 pixels from bottom
-    ctx.lineTo(canvas.width, canvas.height - 60); // Draw across screen
-    ctx.stroke();
+    // Draw platforms
+    platforms.forEach(platform => {
+        // Different colors for different platform types
+        switch(platform.type) {
+            case 'bouncy_platform':
+            case 'super_bouncy_platform':
+                ctx.fillStyle = '#FF69B4';  // Hot pink for bouncy
+                break;
+            case 'oneway':
+                ctx.fillStyle = '#87CEEB';  // Sky blue for one-way
+                break;
+            case 'platform_r_slow':
+            case 'platform_l_slow':
+                ctx.fillStyle = '#FFD700';  // Gold for moving
+                break;
+            default:
+                ctx.fillStyle = '#654321';  // Brown for solid
+        }
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    });
     
-    // Draw player rectangle
+    // Draw player
     player.draw(ctx);
+    
+    // Draw collision debug info
+    collisionDetection.drawDebug(ctx, [...platforms, player]);
     
     // Draw debug info (FPS and coordinates)
     drawDebugInfo();
