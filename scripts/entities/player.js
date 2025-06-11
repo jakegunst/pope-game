@@ -166,7 +166,7 @@ class Player {
             this.state = 'jumping';
         } else if (this.speedY > 0 && !this.isGrounded) {
             this.state = 'falling';
-        } else if (Math.abs(this.speedX) > 0.1) {
+        } else if (Math.abs(this.speedX) > 0.5) {  // Changed from 0.1 to 0.5 for dead zone
             this.state = 'walking';
         } else if (this.idleTimer > 300) {  // 5 seconds at 60fps
             this.state = 'longIdle';
