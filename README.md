@@ -197,7 +197,152 @@ Level data - What else to store per level?
 	•	Gravity modifications
 	•	Time limits
 
+Before writing game-engine.js, quick questions:
 
+1. Camera system - How should the view follow the player?
+
+Centered on player, Smooth following with slight lag
+
+2. Level boundaries - What happens at level edges?
+
+Hard stop at edges, Kill player if they fall off bottom
+
+3. HUD display - What info should always be visible?
+
+Top left corner:
+# Lives
+% health
+Tithe (coins)
+
+Top right corner:
+Current power-ups
+# pope blood  (able to be hidden depending on the level)
+% holy water  (able to be hidden depending on the level)
+
+Bottom right corner:
+Score
+Timer (able to be hidden depending on the level)
+
+4. Pause functionality - Want to add:
+
+Pause with P
+Pause menu with options
+
+5. Death/Respawn - When the player dies:
+
+Death animation first (falling, fading), then respawn at checkpoint
+"Lives" system (game over after X deaths)
+
+6. Screen transitions - When moving between areas/screens:
+
+Smooth scroll to new area, sometimes Special transition effects (iris wipe, etc)
+
+7. Performance optimization - For large levels:
+	•	Render only what's visible on screen (plus small buffer zone)
+	•	Chunk loading system - divide levels into 512x512 pixel sections, load/unload as player moves
+	•	Simple LOD for decorations and particles (less detail for distant objects)
+
+8. Debug features - Developer tools:
+
+Free camera mode (fly around level)
+God mode (invincibility)
+Level skip buttons
+Show FPS/performance stats
+Spawn enemies/items on click
+
+9. Save system - Progress saving:
+
+Auto-save at checkpoints
+Save current level progress
+Save inventory/upgrades between sessions
+Multiple save slots
+
+
+10. Game states - Different modes to handle:
+
+Main menu state?
+Level select screen?
+Cutscene/dialogue state?
+Boss fight state (different camera)?
+Victory/game over screens?
+
+=======
+
+1. Camera system - How should the view follow the player?
+
+Always centered on player?
+Dead zone (only move camera when player near edge)?
+Smooth following with slight lag?
+
+
+2. Level boundaries - What happens at level edges?
+
+Hard stop at edges?
+Kill player if they fall off bottom?
+Wrap around (appear on other side)?
+
+
+3. HUD display - What info should always be visible?
+
+Lives/health?
+Score/coins?
+Timer?
+Current power-ups?
+
+
+4. Pause functionality - Want to add:
+
+Pause with P or Escape key?
+Pause menu with options?
+Just freeze everything?
+
+5. Death/Respawn - When the player dies:
+
+Instant respawn at checkpoint?
+Death animation first (falling, fading)?
+"Lives" system (game over after X deaths)?
+Respawn delay/button press?
+
+
+6. Screen transitions - When moving between areas/screens:
+
+Smooth scroll to new area?
+Fade out/fade in?
+Instant snap?
+Special transition effects (iris wipe, etc)?
+
+
+7. Performance optimization - For large levels:
+
+Only render what's on screen?
+LOD system (less detail far away)?
+Chunk loading (load level in sections)?
+
+
+8. Debug features - Developer tools:
+
+Free camera mode (fly around level)?
+God mode (invincibility)?
+Level skip buttons?
+Show FPS/performance stats?
+Spawn enemies/items on click?
+
+
+9. Save system - Progress saving:
+
+Auto-save at checkpoints?
+Save current level progress?
+Save inventory/upgrades between sessions?
+Multiple save slots?
+
+
+10. Game states - Different modes to handle:
+
+Main menu state
+Level select screen
+Cutscene/dialogue state
+Boss fight state (different camera)
+Victory/game over screens
 
 
 
