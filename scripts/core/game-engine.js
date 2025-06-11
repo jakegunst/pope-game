@@ -101,8 +101,8 @@ class GameEngine {
         this.camera.bounds = {
             minX: 0,
             minY: 0,
-            maxX: this.currentLevel.pixelWidth - this.canvas.width,
-            maxY: this.currentLevel.pixelHeight - this.canvas.height
+            maxX: Math.max(0, this.currentLevel.pixelWidth - this.canvas.width),
+            maxY: Math.max(0, this.currentLevel.pixelHeight - this.canvas.height)
         };
         
         // Spawn player at start position
@@ -394,6 +394,10 @@ class GameEngine {
      * Render the game world
      */
     renderGame() {
+        // Fill background with sky color
+        this.ctx.fillStyle = '#87CEEB';
+        this.ctx.fillRect(this.camera.x, this.camera.y, this.canvas.width, this.canvas.height);
+        
         // Render parallax backgrounds
         this.renderParallaxBackground();
         
@@ -538,6 +542,15 @@ class GameEngine {
             if (e.key === 'F2') this.debug.freeCamera = !this.debug.freeCamera;
             if (e.key === 'F3') this.debug.godMode = !this.debug.godMode;
             if (e.key === 'F4') this.skipLevel();
+            
+            // Free camera movement
+            if (this.debug.freeCamera) {
+                const cameraSpeed = 10;
+                if (e.key === 'ArrowLeft') this.camera.x -= cameraSpeed;
+                if (e.key === 'ArrowRight') this.camera.x += cameraSpeed;
+                if (e.key === 'ArrowUp') this.camera.y -= cameraSpeed;
+                if (e.key === 'ArrowDown') this.camera.y += cameraSpeed;
+            }
             
             // Pause menu navigation
             if (this.currentState === this.states.PAUSED) {
