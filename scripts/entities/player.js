@@ -157,9 +157,6 @@ class Player {
         this.x += this.speedX;
         this.y += this.speedY;
         
-        // Keep player on screen (temporary boundaries)
-        this.x = Math.max(0, Math.min(960 - this.width, this.x));
-        
         // Update projectile charging
         if (this.isCharging && this.lastShotTime <= 0) {
             this.chargeTime = Math.min(this.chargeTime + 1, this.maxChargeTime);
