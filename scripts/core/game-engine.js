@@ -110,6 +110,11 @@ class GameEngine {
         player.x = spawn.x;
         player.y = spawn.y;
         
+        // Initialize enemies
+        if (window.enemyManager) {
+            window.enemyManager.init(this.currentLevel);
+        }
+        
         // Initialize chunks
         this.initializeChunks();
         
@@ -424,6 +429,11 @@ class GameEngine {
         
         // Render player (always)
         player.draw(this.ctx);
+        
+        // Render enemies
+        if (window.enemyManager) {
+            window.enemyManager.draw(this.ctx);
+        }
         
         // Render weather effects
         this.renderWeather();
@@ -747,6 +757,12 @@ class GameEngine {
         this.levelTime = 0;
         this.levelLoader.currentCheckpoint = 0;
         this.levelLoader.collectedItems.clear();
+        
+        // Clear and reinitialize enemies
+        if (window.enemyManager) {
+            window.enemyManager.clear();
+            window.enemyManager.init(this.currentLevel);
+        }
         
         // Respawn player
         this.respawnPlayer();
