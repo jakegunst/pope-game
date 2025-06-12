@@ -119,11 +119,11 @@ function update() {
     // Let game engine handle everything
     gameEngine.update();
     
-    // Update player
+    // Update player (physics are now applied inside player.update())
     player.update();
     
-    // Reset grounded state (will be set by collisions)
-    player.setGrounded(false);
+    // REMOVED: player.setGrounded(false) - This was preventing jumping!
+    // The grounded state should only be set by collision detection
     
     // Get platforms from current level
     const levelPlatforms = gameEngine.currentLevel ? 
