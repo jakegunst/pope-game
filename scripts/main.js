@@ -12,6 +12,7 @@ let fps = 0; // Frames per second counter
 let physics; // Physics system
 let collisionDetection; // Collision system
 let gameEngine; // Main game engine
+let enemyManager; // Enemy management system
 
 // Player object - will be initialized after loading player.js
 let player;
@@ -46,8 +47,13 @@ function init() {
     window.collisionDetection = new CollisionDetection();
     collisionDetection = window.collisionDetection;
     
+    // Create enemy manager
+    window.enemyManager = new EnemyManager();
+    enemyManager = window.enemyManager;
+    
     // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
+    window.player = player; // Make player globally accessible for enemies
     
     // Create game engine
     gameEngine = new GameEngine(canvas, ctx);
@@ -121,6 +127,9 @@ function update() {
     
     // Update player (physics are now applied inside player.update())
     player.update();
+    
+    // Update all enemies
+    enemyManager.update();
     
     // REMOVED: player.setGrounded(false) - This was preventing jumping!
     // The grounded state should only be set by collision detection
