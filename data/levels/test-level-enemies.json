@@ -1,0 +1,168 @@
+{
+    "name": "Test Level - Enemy Combat",
+    "theme": "peru_village",
+    "width": 50,
+    "height": 20,
+    "tileSize": 32,
+    "spawn": {
+        "x": 100,
+        "y": 400
+    },
+    "goal": {
+        "type": "reach_exit",
+        "position": {
+            "x": 1500,
+            "y": 320
+        }
+    },
+    "platforms": [
+        {
+            "type": "solid",
+            "x": 0,
+            "y": 512,
+            "width": 1600,
+            "height": 128
+        },
+        {
+            "type": "solid",
+            "x": 300,
+            "y": 416,
+            "width": 128,
+            "height": 96
+        },
+        {
+            "type": "solid",
+            "x": 500,
+            "y": 320,
+            "width": 192,
+            "height": 192
+        },
+        {
+            "type": "bouncy_platform",
+            "x": 750,
+            "y": 448,
+            "width": 96,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 900,
+            "y": 256,
+            "width": 256,
+            "height": 256
+        },
+        {
+            "type": "oneway",
+            "x": 1000,
+            "y": 192,
+            "width": 128,
+            "height": 16
+        },
+        {
+            "type": "platform_r_slow",
+            "x": 1200,
+            "y": 384,
+            "width": 96,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 1400,
+            "y": 320,
+            "width": 200,
+            "height": 192
+        }
+    ],
+    "enemies": [
+        {
+            "type": "walker",
+            "x": 350,
+            "y": 380,
+            "config": {
+                "variant": "normal",
+                "patrolDistance": 100
+            }
+        },
+        {
+            "type": "walker",
+            "x": 550,
+            "y": 280,
+            "config": {
+                "variant": "strong",
+                "aiType": "chase"
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 700,
+            "y": 200,
+            "config": {
+                "flyPattern": "sine",
+                "amplitude": 80,
+                "patrolDistance": 200
+            }
+        },
+        {
+            "type": "walker",
+            "x": 950,
+            "y": 220,
+            "config": {
+                "variant": "fast",
+                "startDirection": -1
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 1100,
+            "y": 100,
+            "config": {
+                "flyPattern": "dive",
+                "amplitude": 50
+            }
+        },
+        {
+            "type": "walker",
+            "x": 1250,
+            "y": 348,
+            "config": {
+                "variant": "normal",
+                "patrolDistance": 0,
+                "turnAtEdges": false
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 1300,
+            "y": 150,
+            "config": {
+                "flyPattern": "hover",
+                "detectionRange": 150
+            }
+        },
+        {
+            "type": "walker",
+            "x": 1450,
+            "y": 284,
+            "config": {
+                "variant": "strong",
+                "aiType": "chase",
+                "detectionRange": 300
+            }
+        }
+    ],
+    "collectibles": [],
+    "backgroundLayers": [
+        {
+            "image": "peru_mountains.png",
+            "parallaxSpeed": 0.3,
+            "yOffset": 0
+        },
+        {
+            "image": "peru_village.png", 
+            "parallaxSpeed": 0.6,
+            "yOffset": 200
+        }
+    ],
+    "music": "peru_theme.mp3",
+    "ambientSound": "village_sounds.mp3"
+}
