@@ -115,6 +115,9 @@ class Player {
         // Use physics system for movement
         window.physics.applyMovement(this, inputDirection);
         
+        // Apply gravity - THIS WAS MISSING!
+        window.physics.applyGravity(this);
+        
         // Handle jumping
         if (this.keys.up && this.hasReleasedJump) {
             // Can jump if grounded OR within coyote time
@@ -206,9 +209,8 @@ class Player {
      */
     setGrounded(grounded) {
         this.isGrounded = grounded;
-        //commenting out these next two lines in an effort to debug a non-jumping/floating above the ground bug
-        //if (grounded) {
-        //    this.speedY = 0;
+        if (grounded) {
+            this.speedY = 0;
         }
     }
 }
