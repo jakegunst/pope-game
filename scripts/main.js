@@ -78,7 +78,7 @@ function init() {
     });
     
     // Load test level
-    gameEngine.init('data/levels/test-level.json').then(success => {
+    gameEngine.init('data/levels/test-level-enemies.json').then(success => {
         if (success) {
             console.log('Game engine initialized!');
             // Start the game loop
