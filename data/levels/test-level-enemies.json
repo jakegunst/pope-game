@@ -77,7 +77,7 @@
         {
             "type": "walker",
             "x": 350,
-            "y": 380,
+            "y": 448,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 100
@@ -86,7 +86,7 @@
         {
             "type": "walker",
             "x": 550,
-            "y": 280,
+            "y": 416,
             "config": {
                 "variant": "strong",
                 "aiType": "chase"
@@ -95,7 +95,7 @@
         {
             "type": "flyer",
             "x": 700,
-            "y": 200,
+            "y": 300,
             "config": {
                 "flyPattern": "sine",
                 "amplitude": 80,
@@ -105,7 +105,7 @@
         {
             "type": "walker",
             "x": 950,
-            "y": 220,
+            "y": 384,
             "config": {
                 "variant": "fast",
                 "startDirection": -1
@@ -114,7 +114,7 @@
         {
             "type": "flyer",
             "x": 1100,
-            "y": 100,
+            "y": 250,
             "config": {
                 "flyPattern": "dive",
                 "amplitude": 50
@@ -123,7 +123,7 @@
         {
             "type": "walker",
             "x": 1250,
-            "y": 348,
+            "y": 416,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 0,
@@ -133,7 +133,7 @@
         {
             "type": "flyer",
             "x": 1300,
-            "y": 150,
+            "y": 200,
             "config": {
                 "flyPattern": "hover",
                 "detectionRange": 150
@@ -142,7 +142,7 @@
         {
             "type": "walker",
             "x": 1450,
-            "y": 284,
+            "y": 352,
             "config": {
                 "variant": "strong",
                 "aiType": "chase",
