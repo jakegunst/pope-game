@@ -206,8 +206,9 @@ class Player {
      */
     setGrounded(grounded) {
         this.isGrounded = grounded;
-        if (grounded) {
-            this.speedY = 0;
+        //commenting out these next two lines in an effort to debug a non-jumping/floating above the ground bug
+        //if (grounded) {
+        //    this.speedY = 0;
         }
     }
 }
