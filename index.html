@@ -11,11 +11,26 @@
         <canvas id="gameCanvas"></canvas>
     </div>
     <!-- Load your JavaScript files in order -->
+<!-- Core systems (needed by everything) -->
 <script src="scripts/core/physics.js?v=2"></script>
 <script src="scripts/core/collision-detection.js?v=2"></script>
+
+<!-- Level system -->
 <script src="scripts/systems/level-loader.js?v=1"></script>
+
+<!-- Game engine (needs level loader) -->
 <script src="scripts/core/game-engine.js?v=1"></script>
+
+<!-- Player entity -->
 <script src="scripts/entities/player.js?v=2"></script>
+
+<!-- Enemy system (in order) -->
+<script src="scripts/entities/enemies/enemy-base.js"></script>
+<script src="scripts/entities/enemies/enemy-walker.js"></script>
+<script src="scripts/entities/enemies/enemy-flyer.js"></script>
+<script src="scripts/systems/enemy-manager.js"></script>
+
+<!-- Main game file (must be last) -->
 <script src="scripts/main.js?v=2"></script>
 </body>
 </html>
