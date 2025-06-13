@@ -20,6 +20,8 @@ class EnemyWalker extends EnemyBase {
         
         super(x, y, walkerConfig);
         
+        console.log(`Walker spawned at ${x}, ${y}`);
+        
         // Walker-specific properties
         this.walkSpeed = this.baseSpeed;
         this.direction = config.startDirection || 1;  // 1 = right, -1 = left
