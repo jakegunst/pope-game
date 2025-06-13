@@ -133,18 +133,29 @@ class EnemyManager {
         
         if (!player || !collisionDetection) return;
         
-        // In the checkCollisions() method, add this debug code right after getting platforms:
-
-        // Get platforms from game engine
-        const platforms = window.gameEngine?.currentLevel?.platforms || [];
+        // Get platforms from game engine - TRY MULTIPLE LOCATIONS
+        let platforms = window.gameEngine?.currentLevel?.platforms || [];
+        
+        // If no platforms found, check levelLoader
+        if (platforms.length === 0 && window.gameEngine?.levelLoader?.currentLevel?.platforms) {
+            platforms = window.gameEngine.levelLoader.currentLevel.platforms;
+            console.log('Found platforms in levelLoader:', platforms.length);
+        }
         
         // Debug: Log platform count once
         if (!this.platformsLogged) {
             console.log('=== ENEMY COLLISION DEBUG ===');
-            console.log('Number of platforms available:', platforms.length);
-            console.log('Number of enemies:', this.enemies.length);
-            console.log('First platform:', platforms[0]);
-            console.log('First enemy:', this.enemies[0]);
+            console.log('gameEngine exists:', !!window.gameEngine);
+            console.log('currentLevel exists:', !!window.gameEngine?.currentLevel);
+            console.log('currentLevel keys:', window.gameEngine?.currentLevel ? Object.keys(window.gameEngine.currentLevel) : 'N/A');
+            console.log('platforms in currentLevel:', window.gameEngine?.currentLevel?.platforms);
+            console.log('Number of platforms found:', platforms.length);
+            
+            // Check if platforms might be stored elsewhere
+            if (window.gameEngine?.levelLoader?.currentLevel) {
+                console.log('Platforms in levelLoader:', window.gameEngine.levelLoader.currentLevel.platforms?.length);
+            }
+            
             this.platformsLogged = true;
         }
         
@@ -227,7 +238,11 @@ class EnemyManager {
      * Check if there's ground at a position
      */
     checkGroundAhead(x, y) {
-        const platforms = window.gameEngine?.currentLevel?.platforms || [];
+        // Get platforms - try multiple locations
+        let platforms = window.gameEngine?.currentLevel?.platforms || [];
+        if (platforms.length === 0 && window.gameEngine?.levelLoader?.currentLevel?.platforms) {
+            platforms = window.gameEngine.levelLoader.currentLevel.platforms;
+        }
         
         // Check if any platform is below this point
         for (let platform of platforms) {
