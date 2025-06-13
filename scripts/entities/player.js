@@ -167,6 +167,12 @@ class Player {
                 this.y = 0;
                 this.speedY = Math.max(0, this.speedY);
             }
+            
+            // Prevent falling below level bottom
+            if (this.y > level.pixelHeight - this.height) {
+                this.y = level.pixelHeight - this.height;
+                this.speedY = Math.min(0, this.speedY);
+            }
         }
         
         // Update projectile charging
