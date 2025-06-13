@@ -128,26 +128,11 @@ function update() {
     // Update player (physics are now applied inside player.update())
     player.update();
     
-    // Update all enemies
-    enemyManager.update();
-    
-    // REMOVED: player.setGrounded(false) - This was preventing jumping!
-    // The grounded state should only be set by collision detection
-    
     // Get platforms from current level
     const levelPlatforms = gameEngine.currentLevel ? 
         gameEngine.currentLevel.platforms : [];
     
-    // Debug: log platform count once
-    if (!window.platformsLogged) {
-        console.log('Number of platforms:', levelPlatforms.length);
-        levelPlatforms.forEach((p, i) => {
-            console.log(`Platform ${i}: ${p.type} at ${p.x},${p.y}`);
-        });
-        window.platformsLogged = true;
-    }
-    
-    // Check collisions with all platforms
+    // Check collisions with all platforms for PLAYER ONLY
     levelPlatforms.forEach(platform => {
         const collision = collisionDetection.checkRectCollision(player, platform);
         if (collision) {
