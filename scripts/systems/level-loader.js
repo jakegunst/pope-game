@@ -140,18 +140,24 @@ class LevelLoader {
     
     /**
      * Convert platform data with special handling for sizes
+     * FIXED: Don't multiply pixel values by tile size
      */
     convertPlatforms(platforms) {
         return platforms.map(platform => {
             const pos = this.convertPosition(platform);
             
-            // Handle width/height in tiles or pixels
+            // Check if the platform explicitly says it's in tiles
             let width = platform.width || 1;
             let height = platform.height || 1;
             
-            // If values are small, assume tiles
-            if (width < 50) width *= this.tileSize;
-            if (height < 50) height *= this.tileSize;
+            // Only convert to pixels if explicitly marked as tiles
+            // or if the values are very small (less than 5)
+            if (platform.inTiles || (width < 5 && height < 5)) {
+                width *= this.tileSize;
+                height *= this.tileSize;
+            }
+            // Otherwise, assume the values are already in pixels
+            // This fixes the bug where height:32 was being multiplied by 32
             
             return {
                 x: pos.x,
