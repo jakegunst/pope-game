@@ -376,12 +376,6 @@ class GameEngine {
             case this.states.BOSS_FIGHT:
                 this.renderGame();
                 break;
-            case this.states.VICTORY:
-                this.renderVictory();
-                break;
-            case this.states.GAME_OVER:
-                this.renderGameOver();
-                break;
         }
         
         // Restore context
@@ -389,6 +383,16 @@ class GameEngine {
         
         // Render HUD (not affected by camera)
         this.renderHUD();
+        
+        // Render screens that should be on top
+        switch (this.currentState) {
+            case this.states.VICTORY:
+                this.renderVictory();
+                break;
+            case this.states.GAME_OVER:
+                this.renderGameOver();
+                break;
+        }
         
         // Render pause menu if paused
         if (this.currentState === this.states.PAUSED) {
@@ -724,7 +728,7 @@ class GameEngine {
      * Render victory screen
      */
     renderVictory() {
-        // Fill screen with celebration color
+        // Fill screen with celebration color (no camera transform)
         this.ctx.fillStyle = 'gold';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
