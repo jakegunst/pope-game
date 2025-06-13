@@ -65,16 +65,6 @@ class EnemyBase {
      * Base update - called every frame
      */
     update() {
-        // Reset grounded state (will be set by collisions)
-        if (this.affectedByGravity) {
-            this.isGrounded = false;
-        }
-        
-        // Apply gravity if needed
-        if (this.affectedByGravity && !this.isGrounded) {
-            window.physics.applyGravity(this);
-        }
-        
         // Update invulnerability
         if (this.invulnerabilityTime > 0) {
             this.invulnerabilityTime--;
@@ -93,6 +83,11 @@ class EnemyBase {
                 this.shouldRemove = true;
             }
             return; // Don't update AI when dead
+        }
+        
+        // Apply gravity if needed (BEFORE movement)
+        if (this.affectedByGravity && !this.isGrounded) {
+            window.physics.applyGravity(this);
         }
         
         // Update state timer
