@@ -471,7 +471,17 @@ class GameEngine {
             this.ctx.font = '12px Arial';
             this.ctx.fillText('↑↑↑', platform.x + platform.width/2 - 10, platform.y + platform.height/2);
         } else {
+            // IMPORTANT: Only draw the exact platform rectangle
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            
+            // Debug: Draw platform bounds
+            if (this.debug.enabled) {
+                this.ctx.strokeStyle = 'red';
+                this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '10px Arial';
+                this.ctx.fillText(`${platform.width}x${platform.height}`, platform.x + 2, platform.y - 2);
+            }
         }
     }
     
