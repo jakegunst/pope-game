@@ -34,6 +34,9 @@ class EnemyManager {
         this.enemyProjectiles = [];
         this.droppedItems = [];
         
+        console.log('Enemy manager init with level:', levelData);
+        console.log('Level has platforms:', levelData?.platforms?.length || 0);
+        
         // Spawn enemies from level data
         if (levelData.enemies) {
             levelData.enemies.forEach(enemyData => {
@@ -44,6 +47,7 @@ class EnemyManager {
                     enemyData.config || {}
                 );
             });
+            console.log('Spawned enemies:', this.enemies.length);
         }
     }
     
@@ -73,14 +77,11 @@ class EnemyManager {
      * Update all enemies
      */
     update() {
-        // First check collisions to ground enemies properly
-        this.checkCollisions();
-        
-        // Update all enemies
+        // Update all enemies FIRST
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             
-            // Update enemy
+            // Update enemy (physics and AI)
             enemy.update();
             
             // Remove enemies that fall off the bottom
@@ -116,6 +117,9 @@ class EnemyManager {
             }
         }
         
+        // THEN check collisions (after physics have moved enemies)
+        this.checkCollisions();
+        
         // Update enemy projectiles
         this.updateProjectiles();
     }
@@ -132,12 +136,23 @@ class EnemyManager {
         // Get platforms from game engine
         const platforms = window.gameEngine?.currentLevel?.platforms || [];
         
+        // Debug: Log platform count once
+        if (!this.platformsLogged) {
+            console.log('Enemy collision checking platforms:', platforms.length);
+            this.platformsLogged = true;
+        }
+        
         this.enemies.forEach(enemy => {
             // Skip dead enemies
             if (enemy.isDead) return;
             
             // Enemy-platform collisions
             if (enemy.collideWithPlatforms) {
+                // Reset grounded state for gravity-affected enemies
+                if (enemy.affectedByGravity) {
+                    enemy.isGrounded = false;
+                }
+                
                 platforms.forEach(platform => {
                     const collision = collisionDetection.checkRectCollision(enemy, platform);
                     if (collision) {
