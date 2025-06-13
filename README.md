@@ -344,10 +344,26 @@ Cutscene/dialogue state
 Boss fight state (different camera)
 Victory/game over screens
 
+=====
+June 12th status report:
+Current Issues:
 
+Platform Rendering Bug - Platforms show as 1024 pixels tall instead of 32! (see console: "Platform at 0,576 size 1600x1024")
+Enemy Stomping - Inconsistent stomp detection, needs better collision timing
+Enemies Fall Through Platforms - They collide with ground (y:576) but not other platforms
 
+What's Working:
+Game loads and runs
+Player movement and jumping
+Holy water projectiles
+Enemy spawning and basic AI
+Camera following (horizontal and vertical)
+Victory/game over screens
 
-
+Recently Fixed:
+Enemy manager now finds platforms correctly
+Basic enemy-platform collision works for ground
+=====
 
 
 
