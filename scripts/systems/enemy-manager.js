@@ -83,6 +83,13 @@ class EnemyManager {
             // Update enemy
             enemy.update();
             
+            // Remove enemies that fall off the bottom
+            if (window.gameEngine && window.gameEngine.currentLevel) {
+                if (enemy.y > window.gameEngine.currentLevel.pixelHeight + 100) {
+                    enemy.shouldRemove = true;
+                }
+            }
+            
             // Check edge detection for walkers
             if (enemy.needsEdgeCheck) {
                 const hasGround = this.checkGroundAhead(
