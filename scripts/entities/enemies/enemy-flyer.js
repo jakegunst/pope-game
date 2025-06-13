@@ -27,6 +27,9 @@ class EnemyFlyer extends EnemyBase {
         this.baseY = y;  // Remember starting Y position
         this.baseX = x;  // For circular pattern
         
+        // Direction for movement
+        this.direction = config.direction || 1;  // 1 = right, -1 = left
+        
         // Pattern parameters
         this.amplitude = config.amplitude || 50;  // Wave height
         this.frequency = config.frequency || 0.05;  // Wave speed
