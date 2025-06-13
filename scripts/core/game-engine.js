@@ -156,49 +156,49 @@ class GameEngine {
      * Update game when playing
      */
     updatePlaying() {
-    // Update level time
-    this.levelTime += 1/60;  // Assuming 60 FPS
-    
-    // Check time limit
-    if (this.currentLevel.timeLimit && this.levelTime > this.currentLevel.timeLimit) {
-        this.playerDeath();
-        return;
+        // Update level time
+        this.levelTime += 1/60;  // Assuming 60 FPS
+        
+        // Check time limit
+        if (this.currentLevel.timeLimit && this.levelTime > this.currentLevel.timeLimit) {
+            this.playerDeath();
+            return;
+        }
+        
+        // Update camera to follow player
+        this.updateCamera();
+        
+        // Update active chunks based on camera
+        this.updateActiveChunks();
+        
+        // Apply level-specific physics
+        if (this.currentLevel.gravity !== 1.0) {
+            window.physics.gravity *= this.currentLevel.gravity;
+        }
+        
+        // Update all enemies
+        if (window.enemyManager) {
+            window.enemyManager.update();
+        }
+        
+        // Check if player fell off bottom
+        if (player.y > this.currentLevel.pixelHeight + 100) {
+            this.playerDeath();
+        }
+        
+        // Update checkpoints
+        this.levelLoader.updateCheckpoint(player.x);
+        
+        // Check level completion
+        if (this.checkLevelComplete()) {
+            this.currentState = this.states.VICTORY;
+        }
+        
+        // Apply debug features
+        if (this.debug.godMode) {
+            this.playerStats.health = this.playerStats.maxHealth;
+        }
     }
-    
-    // Update camera to follow player
-    this.updateCamera();
-    
-    // Update active chunks based on camera
-    this.updateActiveChunks();
-    
-    // Apply level-specific physics
-    if (this.currentLevel.gravity !== 1.0) {
-        window.physics.gravity *= this.currentLevel.gravity;
-    }
-    
-    // Update all enemies
-    if (window.enemyManager) {
-        window.enemyManager.update();
-    }
-    
-    // Check if player fell off bottom
-    if (player.y > this.currentLevel.pixelHeight + 100) {
-        this.playerDeath();
-    }
-    
-    // Update checkpoints
-    this.levelLoader.updateCheckpoint(player.x);
-    
-    // Check level completion
-    if (this.checkLevelComplete()) {
-        this.currentState = this.states.VICTORY;
-    }
-    
-    // Apply debug features
-    if (this.debug.godMode) {
-        this.playerStats.health = this.playerStats.maxHealth;
-    }
-}
     
     /**
      * Update camera with smooth following
@@ -381,12 +381,6 @@ class GameEngine {
             case this.states.BOSS_FIGHT:
                 this.renderGame();
                 break;
-            case this.states.VICTORY:
-                this.renderVictory();
-                break;
-            case this.states.GAME_OVER:
-                this.renderGameOver();
-                break;
         }
         
         // Restore context
@@ -394,6 +388,16 @@ class GameEngine {
         
         // Render HUD (not affected by camera)
         this.renderHUD();
+        
+        // Render screens that should be on top
+        switch (this.currentState) {
+            case this.states.VICTORY:
+                this.renderVictory();
+                break;
+            case this.states.GAME_OVER:
+                this.renderGameOver();
+                break;
+        }
         
         // Render pause menu if paused
         if (this.currentState === this.states.PAUSED) {
@@ -451,6 +455,13 @@ class GameEngine {
         // Skip if not on screen
         if (!this.isOnScreen(platform)) return;
         
+        // DEBUG: Log platform dimensions once
+        if (!this.platformLogged && platform.type === 'solid') {
+            console.log('Platform render:', platform);
+            console.log(`Platform at ${platform.x},${platform.y} size ${platform.width}x${platform.height}`);
+            this.platformLogged = true;
+        }
+        
         // Use simple colored rectangles for now
         const colors = {
             'solid': '#654321',
@@ -471,18 +482,13 @@ class GameEngine {
             this.ctx.font = '12px Arial';
             this.ctx.fillText('↑↑↑', platform.x + platform.width/2 - 10, platform.y + platform.height/2);
         } else {
-            // IMPORTANT: Only draw the exact platform rectangle
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            
-            // Debug: Draw platform bounds
-            if (this.debug.enabled) {
-                this.ctx.strokeStyle = 'red';
-                this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
-                this.ctx.fillStyle = 'white';
-                this.ctx.font = '10px Arial';
-                this.ctx.fillText(`${platform.width}x${platform.height}`, platform.x + 2, platform.y - 2);
-            }
         }
+        
+        // ALWAYS draw debug outline in red to see actual platform bounds
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
     }
     
     /**
@@ -739,7 +745,7 @@ class GameEngine {
      * Render victory screen
      */
     renderVictory() {
-        // Fill screen with celebration color
+        // Fill screen with celebration color (no camera transform)
         this.ctx.fillStyle = 'gold';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
