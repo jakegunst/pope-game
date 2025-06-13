@@ -6,7 +6,7 @@
     "tileSize": 32,
     "spawn": {
         "x": 100,
-        "y": 400
+        "y": 550
     },
     "goal": {
         "type": "reach_exit",
@@ -19,65 +19,65 @@
         {
             "type": "solid",
             "x": 0,
-            "y": 512,
+            "y": 608,
             "width": 1600,
             "height": 32
         },
         {
             "type": "solid",
             "x": 300,
-            "y": 480,
+            "y": 576,
             "width": 128,
             "height": 32
         },
         {
             "type": "solid",
             "x": 500,
-            "y": 448,
+            "y": 544,
             "width": 192,
-            "height": 64
+            "height": 32
         },
         {
             "type": "bouncy_platform",
             "x": 750,
-            "y": 480,
+            "y": 576,
             "width": 96,
             "height": 32
         },
         {
             "type": "solid",
             "x": 900,
-            "y": 416,
+            "y": 512,
             "width": 256,
-            "height": 96
+            "height": 32
         },
         {
             "type": "oneway",
             "x": 1000,
-            "y": 384,
+            "y": 448,
             "width": 128,
             "height": 16
         },
         {
             "type": "platform_r_slow",
             "x": 1200,
-            "y": 448,
+            "y": 544,
             "width": 96,
             "height": 32
         },
         {
             "type": "solid",
             "x": 1400,
-            "y": 384,
+            "y": 480,
             "width": 200,
-            "height": 128
+            "height": 32
         }
     ],
     "enemies": [
         {
             "type": "walker",
             "x": 350,
-            "y": 448,
+            "y": 540,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 100
@@ -86,7 +86,7 @@
         {
             "type": "walker",
             "x": 550,
-            "y": 416,
+            "y": 508,
             "config": {
                 "variant": "strong",
                 "aiType": "chase"
@@ -105,7 +105,7 @@
         {
             "type": "walker",
             "x": 950,
-            "y": 384,
+            "y": 476,
             "config": {
                 "variant": "fast",
                 "startDirection": -1
@@ -123,7 +123,7 @@
         {
             "type": "walker",
             "x": 1250,
-            "y": 416,
+            "y": 508,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 0,
@@ -142,7 +142,7 @@
         {
             "type": "walker",
             "x": 1450,
-            "y": 352,
+            "y": 444,
             "config": {
                 "variant": "strong",
                 "aiType": "chase",
