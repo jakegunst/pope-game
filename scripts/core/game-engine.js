@@ -1,4 +1,7 @@
-/**
+// DELETE the duplicate updatePlaying method at line 733-770
+
+// The CORRECT updatePlaying method should be at line 138, and should look like this:
+    /**
      * Update game when playing
      */
     updatePlaying() {
