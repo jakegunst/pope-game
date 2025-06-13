@@ -65,6 +65,11 @@ class EnemyBase {
      * Base update - called every frame
      */
     update() {
+        // Reset grounded state (will be set by collisions)
+        if (this.affectedByGravity) {
+            this.isGrounded = false;
+        }
+        
         // Apply gravity if needed
         if (this.affectedByGravity && !this.isGrounded) {
             window.physics.applyGravity(this);
@@ -215,7 +220,7 @@ class EnemyBase {
      * Basic collision response
      */
     onCollisionWithPlatform(platform, collision) {
-        if (collision.fromTop) {
+        if (collision.fromTop && this.speedY >= 0) {
             this.y = platform.y - this.height;
             this.speedY = 0;
             this.isGrounded = true;
