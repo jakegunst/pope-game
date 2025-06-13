@@ -73,6 +73,9 @@ class EnemyManager {
      * Update all enemies
      */
     update() {
+        // First check collisions to ground enemies properly
+        this.checkCollisions();
+        
         // Update all enemies
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
@@ -108,9 +111,6 @@ class EnemyManager {
         
         // Update enemy projectiles
         this.updateProjectiles();
-        
-        // Check collisions
-        this.checkCollisions();
     }
     
     /**
