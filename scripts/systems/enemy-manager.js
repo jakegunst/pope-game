@@ -133,12 +133,18 @@ class EnemyManager {
         
         if (!player || !collisionDetection) return;
         
+        // In the checkCollisions() method, add this debug code right after getting platforms:
+
         // Get platforms from game engine
         const platforms = window.gameEngine?.currentLevel?.platforms || [];
         
         // Debug: Log platform count once
         if (!this.platformsLogged) {
-            console.log('Enemy collision checking platforms:', platforms.length);
+            console.log('=== ENEMY COLLISION DEBUG ===');
+            console.log('Number of platforms available:', platforms.length);
+            console.log('Number of enemies:', this.enemies.length);
+            console.log('First platform:', platforms[0]);
+            console.log('First enemy:', this.enemies[0]);
             this.platformsLogged = true;
         }
         
