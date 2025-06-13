@@ -125,6 +125,25 @@ class EnemyManager {
     }
 
     /**
+     * Get platforms from the correct location
+     * FIXED: Platforms are in levelLoader.currentLevel, not gameEngine.currentLevel
+     */
+    getPlatforms() {
+        // Try multiple locations where platforms might be stored
+        if (window.gameEngine?.levelLoader?.currentLevel?.platforms) {
+            return window.gameEngine.levelLoader.currentLevel.platforms;
+        }
+        
+        if (window.gameEngine?.currentLevel?.platforms) {
+            return window.gameEngine.currentLevel.platforms;
+        }
+        
+        // Fallback to empty array
+        console.warn('Could not find platforms!');
+        return [];
+    }
+
+    /**
      * Check all collisions
      */
     checkCollisions() {
@@ -139,29 +158,14 @@ class EnemyManager {
             return;
         }
         
-        // Get platforms from game engine - TRY MULTIPLE LOCATIONS
-        let platforms = window.gameEngine?.currentLevel?.platforms || [];
-        
-        // If no platforms found, check levelLoader
-        if (platforms.length === 0 && window.gameEngine?.levelLoader?.currentLevel?.platforms) {
-            platforms = window.gameEngine.levelLoader.currentLevel.platforms;
-            console.log('Found platforms in levelLoader:', platforms.length);
-        }
+        // FIXED: Get platforms from the correct location
+        const platforms = this.getPlatforms();
         
         // Debug: Log platform count once
-        if (!this.platformsLogged) {
-            console.log('=== ENEMY COLLISION DEBUG ===');
-            console.log('gameEngine exists:', !!window.gameEngine);
-            console.log('currentLevel exists:', !!window.gameEngine?.currentLevel);
-            console.log('currentLevel keys:', window.gameEngine?.currentLevel ? Object.keys(window.gameEngine.currentLevel) : 'N/A');
-            console.log('platforms in currentLevel:', window.gameEngine?.currentLevel?.platforms);
-            console.log('Number of platforms found:', platforms.length);
-            
-            // Check if platforms might be stored elsewhere
-            if (window.gameEngine?.levelLoader?.currentLevel) {
-                console.log('Platforms in levelLoader:', window.gameEngine.levelLoader.currentLevel.platforms?.length);
-            }
-            
+        if (!this.platformsLogged && platforms.length > 0) {
+            console.log('=== ENEMY COLLISION FIX ===');
+            console.log('Found', platforms.length, 'platforms for enemy collision');
+            console.log('First platform:', platforms[0]);
             this.platformsLogged = true;
         }
         
@@ -197,45 +201,51 @@ class EnemyManager {
     
     /**
      * Handle collision between enemy and player
+     * FIXED: More generous stomping detection
      */
     handleEnemyPlayerCollision(enemy, player, collision) {
-        // More precise stomping detection
+        // Get collision bounds
         const playerBottom = player.y + player.height;
         const enemyTop = enemy.y;
-        const playerCenter = player.x + player.width / 2;
-        const enemyLeft = enemy.x;
-        const enemyRight = enemy.x + enemy.width;
+        const playerCenterX = player.x + player.width / 2;
+        const enemyCenterX = enemy.x + enemy.width / 2;
         
+        // FIXED: More generous stomping detection
         // Check if player is stomping (falling onto enemy from above)
-        // Player must be: falling, above enemy, and horizontally aligned
-        if (player.speedY > 0 && // Moving down
-            playerBottom <= enemyTop + 10 && // Bottom of player near top of enemy
-            playerCenter > enemyLeft && // Horizontally aligned
-            playerCenter < enemyRight &&
-            enemy.vulnerabilities.includes('stomp')) {
-            
-            console.log('STOMP! Player Y:', player.y, 'Enemy Y:', enemy.y, 'Player speedY:', player.speedY);
+        const isAboveEnemy = playerBottom <= enemyTop + 20; // More generous vertical check
+        const isAligned = Math.abs(playerCenterX - enemyCenterX) < (enemy.width * 0.8); // 80% width tolerance
+        const isFalling = player.speedY > 0; // Moving down
+        const canBeStopped = enemy.vulnerabilities && enemy.vulnerabilities.includes('stomp');
+        
+        if (isFalling && isAboveEnemy && isAligned && canBeStopped) {
+            console.log('STOMP SUCCESS! Player speedY:', player.speedY);
             
             // Player stomps enemy
             enemy.takeDamage(1, 'stomp');
             
-            // Bounce player up
-            player.speedY = -10;
+            // Bounce player up (higher bounce for better game feel)
+            player.speedY = -12;
             
             // Add score
             if (window.gameEngine) {
                 window.gameEngine.playerStats.score += 100;
             }
+            
+            // Add a small invulnerability window to prevent double-hits
+            player.invulnerable = true;
+            player.invulnerabilityTime = 10; // Brief invulnerability
+            
         } else if (!player.invulnerable) {
-            console.log('Enemy damages player! Player Y:', player.y, 'Enemy Y:', enemy.y);
+            console.log('Enemy damages player! Not a stomp because:');
+            console.log('- isFalling:', isFalling, 'isAboveEnemy:', isAboveEnemy, 'isAligned:', isAligned);
             
             // Enemy hurts player
             this.damagePlayer(enemy.damage);
             
-            // Knockback player
-            const knockbackX = collision.fromLeft ? -5 : 5;
-            player.speedX = knockbackX;
-            player.speedY = -5;
+            // Knockback player away from enemy
+            const knockbackDirection = playerCenterX < enemyCenterX ? -1 : 1;
+            player.speedX = knockbackDirection * 7; // Stronger knockback
+            player.speedY = -8; // Pop player up
         }
     }
     
@@ -259,18 +269,18 @@ class EnemyManager {
     
     /**
      * Check if there's ground at a position
+     * FIXED: Use the correct platform source
      */
     checkGroundAhead(x, y) {
-        // Get platforms - try multiple locations
-        let platforms = window.gameEngine?.currentLevel?.platforms || [];
-        if (platforms.length === 0 && window.gameEngine?.levelLoader?.currentLevel?.platforms) {
-            platforms = window.gameEngine.levelLoader.currentLevel.platforms;
-        }
+        const platforms = this.getPlatforms();
         
         // Check if any platform is below this point
         for (let platform of platforms) {
-            if (x >= platform.x && x <= platform.x + platform.width &&
-                y >= platform.y && y <= platform.y + 10) {  // Small buffer
+            // Check if the point is above the platform and within its horizontal bounds
+            if (x >= platform.x && 
+                x <= platform.x + platform.width &&
+                y <= platform.y && 
+                y >= platform.y - 50) {  // Check up to 50 pixels below
                 return true;
             }
         }
@@ -324,14 +334,14 @@ class EnemyManager {
      */
     checkProjectileCollisions() {
         const player = window.player;
-        if (!player) return;
+        if (!player || player.invulnerable) return;
         
         // Check enemy projectiles hitting player
         for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
             const proj = this.enemyProjectiles[i];
             
             const collision = window.collisionDetection.checkRectCollision(proj, player);
-            if (collision && !player.invulnerable) {
+            if (collision) {
                 this.damagePlayer(proj.damage || 10);
                 this.enemyProjectiles.splice(i, 1);
             }
