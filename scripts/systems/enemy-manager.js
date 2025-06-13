@@ -199,8 +199,23 @@ class EnemyManager {
      * Handle collision between enemy and player
      */
     handleEnemyPlayerCollision(enemy, player, collision) {
+        // More precise stomping detection
+        const playerBottom = player.y + player.height;
+        const enemyTop = enemy.y;
+        const playerCenter = player.x + player.width / 2;
+        const enemyLeft = enemy.x;
+        const enemyRight = enemy.x + enemy.width;
+        
         // Check if player is stomping (falling onto enemy from above)
-        if (collision.fromTop && player.speedY > 0 && enemy.vulnerabilities.includes('stomp')) {
+        // Player must be: falling, above enemy, and horizontally aligned
+        if (player.speedY > 0 && // Moving down
+            playerBottom <= enemyTop + 10 && // Bottom of player near top of enemy
+            playerCenter > enemyLeft && // Horizontally aligned
+            playerCenter < enemyRight &&
+            enemy.vulnerabilities.includes('stomp')) {
+            
+            console.log('STOMP! Player Y:', player.y, 'Enemy Y:', enemy.y, 'Player speedY:', player.speedY);
+            
             // Player stomps enemy
             enemy.takeDamage(1, 'stomp');
             
@@ -212,6 +227,8 @@ class EnemyManager {
                 window.gameEngine.playerStats.score += 100;
             }
         } else if (!player.invulnerable) {
+            console.log('Enemy damages player! Player Y:', player.y, 'Enemy Y:', enemy.y);
+            
             // Enemy hurts player
             this.damagePlayer(enemy.damage);
             
