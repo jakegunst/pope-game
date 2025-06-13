@@ -123,7 +123,7 @@ class EnemyManager {
         // Update enemy projectiles
         this.updateProjectiles();
     }
-    
+
     /**
      * Check all collisions
      */
@@ -132,6 +132,12 @@ class EnemyManager {
         const collisionDetection = window.collisionDetection;
         
         if (!player || !collisionDetection) return;
+        
+        // Safety check - wait for game engine
+        if (!window.gameEngine) {
+            console.log('Waiting for gameEngine to be available...');
+            return;
+        }
         
         // Get platforms from game engine - TRY MULTIPLE LOCATIONS
         let platforms = window.gameEngine?.currentLevel?.platforms || [];
