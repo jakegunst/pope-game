@@ -216,6 +216,7 @@ class EnemyBase {
      */
     onCollisionWithPlatform(platform, collision) {
         if (collision.fromTop && this.speedY >= 0) {
+            console.log(`Enemy collision with platform at y:${platform.y}, setting enemy y to ${platform.y - this.height}`);
             this.y = platform.y - this.height;
             this.speedY = 0;
             this.isGrounded = true;
