@@ -54,9 +54,10 @@ function init() {
     // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
     window.player = player; // Make player globally accessible for enemies
-    
+
     // Create game engine
     gameEngine = new GameEngine(canvas, ctx);
+    window.gameEngine = gameEngine;  // ADD THIS LINE
     
     // Set up keyboard event listeners AFTER game engine exists
     window.addEventListener('keydown', (e) => {
