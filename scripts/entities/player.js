@@ -157,6 +157,18 @@ class Player {
         this.x += this.speedX;
         this.y += this.speedY;
         
+        // Keep player within level bounds
+        if (window.gameEngine && window.gameEngine.currentLevel) {
+            const level = window.gameEngine.currentLevel;
+            this.x = Math.max(0, Math.min(level.pixelWidth - this.width, this.x));
+            
+            // Prevent going above level top
+            if (this.y < 0) {
+                this.y = 0;
+                this.speedY = Math.max(0, this.speedY);
+            }
+        }
+        
         // Update projectile charging
         if (this.isCharging && this.lastShotTime <= 0) {
             this.chargeTime = Math.min(this.chargeTime + 1, this.maxChargeTime);
