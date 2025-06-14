@@ -6,7 +6,7 @@ class EnemyFlyer extends EnemyBase {
         const flyerConfig = {
             width: 32,
             height: 24,
-            speed: 2,
+            speed: 2.5,  // Faster than walkers!
             health: 1,
             damage: 10,
             color: '#9370DB',  // Medium purple
@@ -30,13 +30,13 @@ class EnemyFlyer extends EnemyBase {
         // Direction for movement
         this.direction = config.direction || 1;  // 1 = right, -1 = left
         
-        // Pattern parameters - BIGGER WAVES!
+        // Pattern parameters - BIGGER WAVES AND FASTER!
         this.amplitude = config.amplitude || 120;  // Much bigger wave height
-        this.frequency = config.frequency || 0.03;  // Slightly slower for smoother motion
+        this.frequency = config.frequency || 0.04;  // Faster sine wave
         this.patternTimer = 0;
         
         // Dive attack properties
-        this.diveSpeed = 8;
+        this.diveSpeed = 10;  // Fast diving!
         this.isDiving = false;
         this.diveRecoveryTime = 60;
         this.diveTimer = 0;
@@ -75,8 +75,8 @@ class EnemyFlyer extends EnemyBase {
      * Sine wave movement pattern - IMPROVED!
      */
     sineWavePattern() {
-        // Horizontal movement
-        this.speedX = this.baseSpeed * this.direction;
+        // Horizontal movement - ALWAYS MOVING!
+        this.x += this.baseSpeed * this.direction;
         
         // Vertical sine wave - now goes low enough to be stomped!
         const waveOffset = Math.sin(this.patternTimer * this.frequency) * this.amplitude;
@@ -102,11 +102,14 @@ class EnemyFlyer extends EnemyBase {
             const distanceFromStart = Math.abs(this.x - this.baseX);
             if (distanceFromStart >= this.patrolDistance) {
                 this.direction *= -1;
+                this.baseX = this.x; // Reset base to prevent getting stuck
+            }
+        } else {
+            // If no patrol distance, turn at screen edges
+            if (this.x <= 0 || this.x >= 1600) {
+                this.direction *= -1;
             }
         }
-        
-        // Update actual position
-        this.x += this.speedX;
     }
     
     /**
