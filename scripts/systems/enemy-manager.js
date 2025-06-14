@@ -210,11 +210,11 @@ class EnemyManager {
         const playerCenterX = player.x + player.width / 2;
         const enemyCenterX = enemy.x + enemy.width / 2;
         
-        // FIXED: More generous stomping detection
+        // FIXED: Even more generous stomping detection
         // Check if player is stomping (falling onto enemy from above)
-        const isAboveEnemy = playerBottom <= enemyTop + 20; // More generous vertical check
-        const isAligned = Math.abs(playerCenterX - enemyCenterX) < (enemy.width * 0.8); // 80% width tolerance
-        const isFalling = player.speedY > 0; // Moving down
+        const isAboveEnemy = playerBottom <= enemyTop + 30; // Very generous vertical check
+        const isAligned = Math.abs(playerCenterX - enemyCenterX) < (enemy.width + 10); // Width + 10px tolerance
+        const isFalling = player.speedY >= -2; // Can stomp even if slightly moving up
         const canBeStopped = enemy.vulnerabilities && enemy.vulnerabilities.includes('stomp');
         
         if (isFalling && isAboveEnemy && isAligned && canBeStopped) {
@@ -223,8 +223,8 @@ class EnemyManager {
             // Player stomps enemy
             enemy.takeDamage(1, 'stomp');
             
-            // Bounce player up (higher bounce for better game feel)
-            player.speedY = -12;
+            // Bounce player up (much higher bounce for better game feel)
+            player.speedY = -18;
             
             // Add score
             if (window.gameEngine) {
