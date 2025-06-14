@@ -12,7 +12,7 @@ class EnemyFlyer extends EnemyBase {
             color: '#9370DB',  // Medium purple
             affectedByGravity: false,  // Flyers ignore gravity
             collideWithPlatforms: false,  // Can fly through platforms
-            vulnerabilities: ['projectile'],  // Can't be stomped while flying
+            vulnerabilities: ['projectile', 'stomp'],  // CAN be stomped at low points!
             drops: [
                 { type: 'coin', chance: 0.3 },
                 { type: 'powerup', chance: 0.05 }
@@ -30,9 +30,9 @@ class EnemyFlyer extends EnemyBase {
         // Direction for movement
         this.direction = config.direction || 1;  // 1 = right, -1 = left
         
-        // Pattern parameters
-        this.amplitude = config.amplitude || 50;  // Wave height
-        this.frequency = config.frequency || 0.05;  // Wave speed
+        // Pattern parameters - BIGGER WAVES!
+        this.amplitude = config.amplitude || 120;  // Much bigger wave height
+        this.frequency = config.frequency || 0.03;  // Slightly slower for smoother motion
         this.patternTimer = 0;
         
         // Dive attack properties
@@ -72,15 +72,30 @@ class EnemyFlyer extends EnemyBase {
     }
     
     /**
-     * Sine wave movement pattern
+     * Sine wave movement pattern - IMPROVED!
      */
     sineWavePattern() {
         // Horizontal movement
         this.speedX = this.baseSpeed * this.direction;
         
-        // Vertical sine wave
+        // Vertical sine wave - now goes low enough to be stomped!
         const waveOffset = Math.sin(this.patternTimer * this.frequency) * this.amplitude;
         this.y = this.baseY + waveOffset;
+        
+        // Make sure flyer comes down low enough to be reachable
+        // At the bottom of the wave, should be about jump height above ground
+        const lowestPoint = this.baseY + this.amplitude;
+        const groundLevel = 576; // Approximate ground level
+        
+        // If configured to be stompable, ensure it comes within reach
+        if (this.vulnerabilities.includes('stomp')) {
+            // Ensure the lowest point is reachable (about 100 pixels above ground)
+            const desiredLowestPoint = groundLevel - 100;
+            if (lowestPoint < desiredLowestPoint) {
+                // Adjust base Y to make it reachable
+                this.baseY = desiredLowestPoint - this.amplitude;
+            }
+        }
         
         // Turn around at screen edges or patrol distance
         if (this.patrolDistance > 0) {
@@ -89,6 +104,9 @@ class EnemyFlyer extends EnemyBase {
                 this.direction *= -1;
             }
         }
+        
+        // Update actual position
+        this.x += this.speedX;
     }
     
     /**
@@ -130,10 +148,16 @@ class EnemyFlyer extends EnemyBase {
             const maxHoverSpeed = 2;
             this.speedX = Math.max(-maxHoverSpeed, Math.min(maxHoverSpeed, this.speedX));
             this.speedY = Math.max(-maxHoverSpeed, Math.min(maxHoverSpeed, this.speedY));
+            
+            // Update position
+            this.x += this.speedX;
+            this.y += this.speedY;
         } else {
             // Return to base position
             this.speedX *= 0.95;
             this.speedY *= 0.95;
+            this.x += this.speedX;
+            this.y += this.speedY;
         }
     }
     
@@ -154,6 +178,8 @@ class EnemyFlyer extends EnemyBase {
                 // Keep diving
                 this.speedX = (dx / dist) * this.diveSpeed;
                 this.speedY = (dy / dist) * this.diveSpeed;
+                this.x += this.speedX;
+                this.y += this.speedY;
             } else {
                 // End dive
                 this.isDiving = false;
@@ -187,8 +213,7 @@ class EnemyFlyer extends EnemyBase {
             y: player.y + player.height / 2
         };
         
-        // Change vulnerabilities during dive
-        this.vulnerabilities = ['projectile', 'stomp'];  // Can be stomped during dive!
+        // Already vulnerable to stomp during normal flight
     }
     
     /**
@@ -205,14 +230,39 @@ class EnemyFlyer extends EnemyBase {
             this.isDiving = false;
             this.diveTimer = this.diveRecoveryTime;
             this.speedY = -5;  // Bounce up
-            this.vulnerabilities = ['projectile'];  // Remove stomp vulnerability
         }
     }
     
     /**
-     * Override draw to show dive state
+     * Override draw to show dive state and better wings
      */
     draw(ctx) {
+        // Draw wings BEHIND body
+        if (!this.isDead) {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 3;
+            
+            // Wing animation - flap faster
+            const wingOffset = Math.sin(this.patternTimer * 0.3) * 8;
+            
+            // Left wing
+            ctx.beginPath();
+            ctx.moveTo(this.x + 5, this.y + this.height/2);
+            ctx.lineTo(this.x - 12, this.y + this.height/2 + wingOffset);
+            ctx.lineTo(this.x - 8, this.y + this.height/2 + wingOffset + 5);
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            
+            // Right wing
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width - 5, this.y + this.height/2);
+            ctx.lineTo(this.x + this.width + 12, this.y + this.height/2 - wingOffset);
+            ctx.lineTo(this.x + this.width + 8, this.y + this.height/2 - wingOffset + 5);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
         // Rotate if diving
         if (this.isDiving) {
             ctx.save();
@@ -227,28 +277,8 @@ class EnemyFlyer extends EnemyBase {
             
             ctx.restore();
         } else {
+            // Draw body normally
             super.draw(ctx);
-        }
-        
-        // Draw wings (simple lines for now)
-        if (!this.isDead) {
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = 2;
-            
-            // Wing animation
-            const wingOffset = Math.sin(this.patternTimer * 0.2) * 5;
-            
-            // Left wing
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y + this.height/2);
-            ctx.lineTo(this.x - 10, this.y + this.height/2 + wingOffset);
-            ctx.stroke();
-            
-            // Right wing
-            ctx.beginPath();
-            ctx.moveTo(this.x + this.width, this.y + this.height/2);
-            ctx.lineTo(this.x + this.width + 10, this.y + this.height/2 - wingOffset);
-            ctx.stroke();
         }
     }
 }
