@@ -2,14 +2,14 @@
 
 class EnemyWalker extends EnemyBase {
     constructor(x, y, config = {}) {
-        // Set walker defaults
+        // Set walker defaults - FASTER for red enemies!
         const walkerConfig = {
             width: 32,
             height: 32,
-            speed: 1.5,
+            speed: config.variant === 'fast' ? 3 : 2.5, // Much faster!
             health: config.variant === 'strong' ? 3 : 1,
             damage: 10,
-            color: '#8B4513',  // Saddle brown
+            color: config.variant === 'strong' ? '#FF0000' : '#8B4513',  // Red for strong variant
             vulnerabilities: ['projectile', 'stomp'],
             drops: [
                 { type: 'coin', chance: 0.5 },
@@ -36,6 +36,11 @@ class EnemyWalker extends EnemyBase {
         this.chaseSpeed = this.walkSpeed * 1.5;
         this.isChasing = false;
         
+        // Jump properties - MUCH HIGHER for better gameplay!
+        this.jumpPower = config.variant === 'strong' ? -15 : -12; // Higher jumps!
+        this.jumpCooldown = 0;
+        this.maxJumpCooldown = 30; // Can jump every 0.5 seconds
+        
         // Initialize movement
         this.speedX = this.walkSpeed * this.direction;
     }
@@ -44,6 +49,11 @@ class EnemyWalker extends EnemyBase {
      * Update AI behavior
      */
     updateAI() {
+        // Update jump cooldown
+        if (this.jumpCooldown > 0) {
+            this.jumpCooldown--;
+        }
+        
         switch(this.aiType) {
             case 'pattern':
                 this.patrolPattern();
@@ -85,6 +95,11 @@ class EnemyWalker extends EnemyBase {
             };
         }
         
+        // Random jump while patrolling (makes them more dynamic)
+        if (this.isGrounded && this.jumpCooldown <= 0 && Math.random() < 0.01) {
+            this.jump();
+        }
+        
         // Simple movement
         if (shouldTurn) {
             this.turn();
@@ -124,6 +139,11 @@ class EnemyWalker extends EnemyBase {
             if (dirToPlayer.y < -32 && this.isGrounded && Math.abs(dirToPlayer.x) < 100) {
                 this.jump();
             }
+            
+            // Also jump if there's an obstacle ahead
+            if (this.isGrounded && this.jumpCooldown <= 0 && Math.abs(this.speedX) < 0.1) {
+                this.jump(); // Jump when stuck
+            }
         } else {
             // Lost player, return to patrol
             if (this.isChasing) {
@@ -135,12 +155,13 @@ class EnemyWalker extends EnemyBase {
     }
     
     /**
-     * Make the enemy jump
+     * Make the enemy jump - HIGHER JUMPS!
      */
     jump() {
-        if (this.isGrounded) {
-            this.speedY = -10;  // Jump power
+        if (this.isGrounded && this.jumpCooldown <= 0) {
+            this.speedY = this.jumpPower;  // Use the higher jump power
             this.isGrounded = false;
+            this.jumpCooldown = this.maxJumpCooldown;
         }
     }
     
