@@ -6,7 +6,7 @@ class EnemyWalker extends EnemyBase {
         const walkerConfig = {
             width: 32,
             height: 32,
-            speed: config.variant === 'fast' ? 3 : 2.5, // Much faster!
+            speed: config.variant === 'fast' ? 3 : 2.0, // Much faster! (2.5) // Changed to 2.0 to split the difference
             health: config.variant === 'strong' ? 3 : 1,
             damage: 10,
             color: config.variant === 'strong' ? '#FF0000' : '#8B4513',  // Red for strong variant
@@ -37,7 +37,7 @@ class EnemyWalker extends EnemyBase {
         this.isChasing = false;
         
         // Jump properties - MUCH HIGHER for better gameplay!
-        this.jumpPower = config.variant === 'strong' ? -15 : -12; // Higher jumps!
+        this.jumpPower = config.variant === 'strong' ? -14 : -11; // Higher jumps! // Slightly lower!
         this.jumpCooldown = 0;
         this.maxJumpCooldown = 30; // Can jump every 0.5 seconds
         
