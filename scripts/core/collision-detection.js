@@ -51,12 +51,12 @@ class CollisionDetection {
             platform_balance_big: { balance: true, tiltSpeed: 0.01, maxTilt: 20, width: 192 },
             
             // Bouncy platforms (MUCH BOUNCIER!)
-            bouncy_platform: { bouncy: true, bouncePower: 2.0 },
-            super_bouncy_platform: { bouncy: true, bouncePower: 3.5 },
-            bouncy_platform_little: { bouncy: true, bouncePower: 2.0, width: 48 },
-            super_bouncy_platform_little: { bouncy: true, bouncePower: 3.5, width: 48 },
-            bouncy_platform_big: { bouncy: true, bouncePower: 2.0, width: 128 },
-            super_bouncy_platform_big: { bouncy: true, bouncePower: 3.5, width: 128 }
+            bouncy_platform: { bouncy: true, bouncePower: 1.2 },
+            super_bouncy_platform: { bouncy: true, bouncePower: 1.8 },
+            bouncy_platform_little: { bouncy: true, bouncePower: 1.2, width: 48 },
+            super_bouncy_platform_little: { bouncy: true, bouncePower: 1.8, width: 48 },
+            bouncy_platform_big: { bouncy: true, bouncePower: 1.2, width: 128 },
+            super_bouncy_platform_big: { bouncy: true, bouncePower: 1.8, width: 128 }
         };
         
         // Collision layers
