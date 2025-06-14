@@ -2,11 +2,11 @@
 
 class EnemyWalker extends EnemyBase {
     constructor(x, y, config = {}) {
-        // Set walker defaults - FASTER for red enemies!
+        // Set walker defaults - FASTER for red enemies! (but 25% slower than before)
         const walkerConfig = {
             width: 32,
             height: 32,
-            speed: config.variant === 'fast' ? 3 : 2.0, // Much faster! (2.5) // Changed to 2.0 to split the difference
+            speed: config.variant === 'fast' ? 2.25 : 1.875, // 25% slower (was 3 and 2.5)
             health: config.variant === 'strong' ? 3 : 1,
             damage: 10,
             color: config.variant === 'strong' ? '#FF0000' : '#8B4513',  // Red for strong variant
@@ -37,9 +37,12 @@ class EnemyWalker extends EnemyBase {
         this.isChasing = false;
         
         // Jump properties - MUCH HIGHER for better gameplay!
-        this.jumpPower = config.variant === 'strong' ? -14 : -11; // Higher jumps! // Slightly lower!
+        this.jumpPower = config.variant === 'strong' ? -15 : -12; // Higher jumps!
         this.jumpCooldown = 0;
         this.maxJumpCooldown = 30; // Can jump every 0.5 seconds
+        
+        // Turn cooldown to prevent jittering
+        this.turnCooldown = 0;
         
         // Initialize movement
         this.speedX = this.walkSpeed * this.direction;
@@ -52,6 +55,11 @@ class EnemyWalker extends EnemyBase {
         // Update jump cooldown
         if (this.jumpCooldown > 0) {
             this.jumpCooldown--;
+        }
+        
+        // Update turn cooldown
+        if (this.turnCooldown > 0) {
+            this.turnCooldown--;
         }
         
         switch(this.aiType) {
@@ -128,7 +136,7 @@ class EnemyWalker extends EnemyBase {
             const dirToPlayer = this.getDirectionToPlayer(player);
             
             // Chase horizontally
-            if (Math.abs(dirToPlayer.x) > 10) {  // Dead zone to prevent jittering
+            if (Math.abs(dirToPlayer.x) > 25) {  // Larger dead zone to prevent jittering
                 this.direction = dirToPlayer.x > 0 ? 1 : -1;
                 this.speedX = this.chaseSpeed * this.direction;
             } else {
@@ -169,8 +177,14 @@ class EnemyWalker extends EnemyBase {
      * Turn around
      */
     turn() {
+        // Add a small cooldown to prevent rapid turning
+        if (this.turnCooldown && this.turnCooldown > 0) {
+            return;
+        }
+        
         this.direction *= -1;
         this.speedX = this.walkSpeed * this.direction;
+        this.turnCooldown = 10; // Prevent turning again for 10 frames
     }
     
     /**
