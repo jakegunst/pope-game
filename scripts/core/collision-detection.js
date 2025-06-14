@@ -50,13 +50,13 @@ class CollisionDetection {
             platform_balance_little: { balance: true, tiltSpeed: 0.03, maxTilt: 45, width: 64 },
             platform_balance_big: { balance: true, tiltSpeed: 0.01, maxTilt: 20, width: 192 },
             
-            // Bouncy platforms
-            bouncy_platform: { bouncy: true, bouncePower: 1.2 },
-            super_bouncy_platform: { bouncy: true, bouncePower: 2.5 },
-            bouncy_platform_little: { bouncy: true, bouncePower: 1.2, width: 48 },
-            super_bouncy_platform_little: { bouncy: true, bouncePower: 2.5, width: 48 },
-            bouncy_platform_big: { bouncy: true, bouncePower: 1.2, width: 128 },
-            super_bouncy_platform_big: { bouncy: true, bouncePower: 2.5, width: 128 }
+            // Bouncy platforms (MUCH BOUNCIER!)
+            bouncy_platform: { bouncy: true, bouncePower: 2.0 },
+            super_bouncy_platform: { bouncy: true, bouncePower: 3.5 },
+            bouncy_platform_little: { bouncy: true, bouncePower: 2.0, width: 48 },
+            super_bouncy_platform_little: { bouncy: true, bouncePower: 3.5, width: 48 },
+            bouncy_platform_big: { bouncy: true, bouncePower: 2.0, width: 128 },
+            super_bouncy_platform_big: { bouncy: true, bouncePower: 3.5, width: 128 }
         };
         
         // Collision layers
@@ -110,9 +110,14 @@ class CollisionDetection {
             return false;
         }
         
-        // Bouncy platform
+        // Bouncy platform - SUPER BOUNCE!
         if (platType.bouncy && collision.fromTop && player.speedY > 0) {
+            // Make it really bouncy - multiply current fall speed
             player.speedY = -Math.abs(player.speedY) * platType.bouncePower;
+            // Cap the bounce to prevent going too high
+            if (player.speedY < -35) player.speedY = -35;
+            
+            console.log('BOUNCE! Power:', platType.bouncePower, 'New speedY:', player.speedY);
             this.triggerCallback('bounce', { power: platType.bouncePower });
             return true;
         }
