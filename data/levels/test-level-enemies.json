@@ -151,7 +151,78 @@
             }
         }
     ],
-    "collectibles": [],
+    "collectibles": [
+        {
+            "type": "tithe",
+            "x": 200,
+            "y": 520
+        },
+        {
+            "type": "tithe",
+            "x": 250,
+            "y": 520
+        },
+        {
+            "type": "tithe",
+            "x": 300,
+            "y": 520
+        },
+        {
+            "type": "tithe",
+            "x": 400,
+            "y": 480
+        },
+        {
+            "type": "tithe",
+            "x": 600,
+            "y": 480
+        },
+        {
+            "type": "beer",
+            "x": 550,
+            "y": 400
+        },
+        {
+            "type": "tithe",
+            "x": 800,
+            "y": 520
+        },
+        {
+            "type": "leaves",
+            "x": 775,
+            "y": 500
+        },
+        {
+            "type": "tithe",
+            "x": 1000,
+            "y": 450
+        },
+        {
+            "type": "tithe",
+            "x": 1050,
+            "y": 390
+        },
+        {
+            "type": "relic",
+            "x": 1100,
+            "y": 300
+        },
+        {
+            "type": "tithe",
+            "x": 1300,
+            "y": 480
+        },
+        {
+            "type": "tithe",
+            "x": 1500,
+            "y": 420
+        },
+        {
+            "type": "beer",
+            "x": 1550,
+            "y": 420
+        }
+    ],
     "backgroundLayers": [
         {
             "image": "peru_mountains.png",
