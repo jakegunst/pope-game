@@ -22,8 +22,39 @@ class EnemyManager {
         // Projectile system (for enemies that shoot)
         this.enemyProjectiles = [];
         
-        // Dropped items
-        this.droppedItems = [];
+    /**
+     * Spawn collectibles when enemy dies
+     */
+    spawnEnemyDrops(enemy) {
+        // Skip if no collectibles manager
+        if (!window.gameEngine || !window.gameEngine.collectiblesManager) return;
+        
+        // 75% chance for coins, 25% for health
+        const dropRoll = Math.random();
+        
+        if (dropRoll < 0.75) {
+            // Drop coins
+            const coinCount = (enemy.type === 'walker' || enemy.type === 'flyer') ? 1 : 2;
+            
+            for (let i = 0; i < coinCount; i++) {
+                // Spread coins out a bit if dropping multiple
+                const offsetX = coinCount > 1 ? (i - 0.5) * 20 : 0;
+                
+                window.gameEngine.collectiblesManager.spawnCollectible(
+                    'tithe',
+                    enemy.x + enemy.width/2 + offsetX - 8,
+                    enemy.y + enemy.height/2 - 8
+                );
+            }
+        } else {
+            // Drop health (beer)
+            window.gameEngine.collectiblesManager.spawnCollectible(
+                'beer',
+                enemy.x + enemy.width/2 - 10,
+                enemy.y + enemy.height/2 - 12
+            );
+        }
+    }
     }
     
     /**
@@ -32,7 +63,6 @@ class EnemyManager {
     init(levelData) {
         this.enemies = [];
         this.enemyProjectiles = [];
-        this.droppedItems = [];
         
         console.log('Enemy manager init with level:', levelData);
         console.log('Level has platforms:', levelData?.platforms?.length || 0);
@@ -106,11 +136,8 @@ class EnemyManager {
             
             // Remove if marked for removal
             if (enemy.shouldRemove) {
-                // Spawn dropped items
-                if (enemy.drops && enemy.drops.length > 0) {
-                    const items = enemy.dropLoot();
-                    this.droppedItems.push(...items);
-                }
+                // Spawn collectibles when enemy dies
+                this.spawnEnemyDrops(enemy);
                 
                 this.enemies.splice(i, 1);
                 this.totalEnemiesDefeated++;
@@ -396,12 +423,6 @@ class EnemyManager {
         this.enemyProjectiles.forEach(proj => {
             ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
         });
-        
-        // Draw dropped items (temporary visualization)
-        this.droppedItems.forEach(item => {
-            ctx.fillStyle = item.type === 'coin' ? 'gold' : 'lime';
-            ctx.fillRect(item.x - 8, item.y - 8, 16, 16);
-        });
     }
     
     /**
@@ -410,7 +431,6 @@ class EnemyManager {
     clear() {
         this.enemies = [];
         this.enemyProjectiles = [];
-        this.droppedItems = [];
     }
 }
 
