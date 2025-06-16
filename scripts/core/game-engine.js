@@ -21,6 +21,7 @@ class GameEngine {
         
         // Core systems
         this.levelLoader = new LevelLoader();
+        this.collectiblesManager = new CollectiblesManager();
         this.camera = {
             x: 0,
             y: 0,
@@ -115,6 +116,9 @@ class GameEngine {
             window.enemyManager.init(this.currentLevel);
         }
         
+        // Initialize collectibles
+        this.collectiblesManager.init(this.currentLevel);
+        
         // Initialize chunks
         this.initializeChunks();
         
@@ -180,6 +184,9 @@ class GameEngine {
         if (window.enemyManager) {
             window.enemyManager.update();
         }
+        
+        // Update collectibles
+        this.collectiblesManager.update();
         
         // Check if player fell off bottom
         if (player.y > this.currentLevel.pixelHeight + 100) {
@@ -444,6 +451,9 @@ class GameEngine {
             window.enemyManager.draw(this.ctx);
         }
         
+        // Render collectibles
+        this.collectiblesManager.draw(this.ctx);
+        
         // Render weather effects
         this.renderWeather();
     }
@@ -454,13 +464,6 @@ class GameEngine {
     renderPlatform(platform) {
         // Skip if not on screen
         if (!this.isOnScreen(platform)) return;
-        
-        // DEBUG: Log platform dimensions once
-        if (!this.platformLogged && platform.type === 'solid') {
-            console.log('Platform render:', platform);
-            console.log(`Platform at ${platform.x},${platform.y} size ${platform.width}x${platform.height}`);
-            this.platformLogged = true;
-        }
         
         // Use simple colored rectangles for now
         const colors = {
@@ -485,10 +488,12 @@ class GameEngine {
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
         }
         
-        // ALWAYS draw debug outline in red to see actual platform bounds
-        this.ctx.strokeStyle = 'red';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+        // Debug: Draw platform outline
+        if (this.debug.enabled) {
+            this.ctx.strokeStyle = 'red';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+        }
     }
     
     /**
@@ -513,12 +518,39 @@ class GameEngine {
         this.ctx.fillText(`Health: ${this.playerStats.health}%`, 10, 55);
         this.ctx.fillText(`Tithe: ${this.playerStats.coins}`, 10, 80);
         
+        // Collection progress
+        const stats = this.collectiblesManager.getCollectionStats();
+        this.ctx.fillText(`Tithes: ${stats.tithes}`, 10, 105);
+        if (parseInt(stats.relics.split('/')[1]) > 0) {
+            this.ctx.fillText(`Relics: ${stats.relics}`, 10, 130);
+        }
+        
         // Top right - Power-ups
         let rightY = 30;
-        this.playerStats.powerUps.forEach(powerUp => {
-            this.ctx.fillText(powerUp, this.canvas.width - 150, rightY);
-            rightY += 25;
-        });
+        
+        // Show active power-ups with visual timer
+        const powerUps = this.collectiblesManager.activePowerUps;
+        if (powerUps.leaves.active) {
+            const percent = powerUps.leaves.timer / powerUps.leaves.duration;
+            this.ctx.fillStyle = powerUps.leaves.flashing ? 'yellow' : 'white';
+            this.ctx.fillText('Speed Boost', this.canvas.width - 150, rightY);
+            // Draw timer bar
+            this.ctx.fillStyle = 'green';
+            this.ctx.fillRect(this.canvas.width - 150, rightY + 5, 100 * percent, 5);
+            rightY += 35;
+        }
+        
+        if (powerUps.breastplate.active) {
+            const percent = powerUps.breastplate.timer / powerUps.breastplate.duration;
+            this.ctx.fillStyle = powerUps.breastplate.flashing ? 'yellow' : 'white';
+            this.ctx.fillText('Invulnerable', this.canvas.width - 150, rightY);
+            // Draw timer bar
+            this.ctx.fillStyle = 'silver';
+            this.ctx.fillRect(this.canvas.width - 150, rightY + 5, 100 * percent, 5);
+            rightY += 35;
+        }
+        
+        this.ctx.fillStyle = 'white';
         
         if (this.showPopeBlood) {
             this.ctx.fillText(`Pope Blood: ${this.playerStats.popeBlood}`, 
@@ -539,6 +571,24 @@ class GameEngine {
             const timeLeft = Math.max(0, this.currentLevel.timeLimit - this.levelTime);
             this.ctx.fillText(`Time: ${Math.floor(timeLeft)}`, 
                             this.canvas.width - 150, this.canvas.height - 15);
+        }
+        
+        // Render toast notifications
+        if (this.collectiblesManager.lastToast && this.collectiblesManager.lastToast.timer > 0) {
+            const toast = this.collectiblesManager.lastToast;
+            toast.timer--;
+            
+            // Draw toast background
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            this.ctx.fillRect(this.canvas.width/2 - 150, 100, 300, 50);
+            
+            // Draw toast text
+            this.ctx.fillStyle = 'gold';
+            this.ctx.font = '24px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(toast.message, this.canvas.width/2, 130);
+            this.ctx.textAlign = 'left';
+            this.ctx.font = '20px Arial';
         }
     }
     
@@ -703,7 +753,7 @@ class GameEngine {
     }
     
     renderCollectible(item) {
-        // TODO: Implement collectible rendering
+        // Handled by collectiblesManager now
     }
     
     updateBossFight() {
@@ -778,6 +828,9 @@ class GameEngine {
         this.levelTime = 0;
         this.levelLoader.currentCheckpoint = 0;
         this.levelLoader.collectedItems.clear();
+        
+        // Clear and reinitialize collectibles
+        this.collectiblesManager.init(this.currentLevel);
         
         // Clear and reinitialize enemies
         if (window.enemyManager) {
