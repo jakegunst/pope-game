@@ -21,7 +21,8 @@ class EnemyManager {
         
         // Projectile system (for enemies that shoot)
         this.enemyProjectiles = [];
-        
+    }
+    
     /**
      * Spawn collectibles when enemy dies
      */
@@ -54,7 +55,6 @@ class EnemyManager {
                 enemy.y + enemy.height/2 - 12
             );
         }
-    }
     }
     
     /**
