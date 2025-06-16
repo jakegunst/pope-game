@@ -22,6 +22,9 @@ class EnemyFlyer extends EnemyBase {
         
         super(x, y, flyerConfig);
         
+        // Set enemy type for drop system
+        this.type = 'flyer';
+        
         // Flying patterns
         this.flyPattern = config.flyPattern || 'sine';  // 'sine', 'circle', 'hover', 'dive'
         this.baseY = y;  // Remember starting Y position
