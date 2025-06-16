@@ -50,11 +50,15 @@ function init() {
     // Create enemy manager
     window.enemyManager = new EnemyManager();
     enemyManager = window.enemyManager;
+
+    // Add this to your main.js file where you create other managers:
+    // Create the collectibles manager
+    window.collectiblesManager = new CollectiblesManager();
     
     // Create player instance AFTER physics is ready
     player = new Player(50, canvas.height - 64 - 60);
     window.player = player; // Make player globally accessible for enemies
-
+    
     // Create game engine
     gameEngine = new GameEngine(canvas, ctx);
     window.gameEngine = gameEngine;  // ADD THIS LINE
