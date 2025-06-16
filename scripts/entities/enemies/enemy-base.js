@@ -8,6 +8,9 @@ class EnemyBase {
         this.width = config.width || 32;
         this.height = config.height || 32;
         
+        // Enemy type (used by drop system)
+        this.type = config.type || 'basic';
+        
         // Movement
         this.speedX = 0;
         this.speedY = 0;
@@ -27,10 +30,6 @@ class EnemyBase {
         // Vulnerability system
         this.vulnerabilities = config.vulnerabilities || ['projectile', 'stomp'];
         // Options: 'projectile', 'stomp', 'special', 'none'
-        
-        // Loot system
-        this.drops = config.drops || [];
-        // Example: [{ type: 'coin', chance: 0.5 }, { type: 'health', chance: 0.1 }]
         
         // Visual properties
         this.color = config.color || '#8B0000';  // Dark red default
@@ -164,30 +163,8 @@ class EnemyBase {
         this.speedX = 0;
         this.speedY = 0;
         
-        // Drop loot
-        this.dropLoot();
-        
         // Could trigger death sound/particles here
-    }
-    
-    /**
-     * Drop loot on death
-     */
-    dropLoot() {
-        const droppedItems = [];
-        
-        this.drops.forEach(drop => {
-            if (Math.random() < drop.chance) {
-                droppedItems.push({
-                    type: drop.type,
-                    x: this.x + this.width / 2,
-                    y: this.y
-                });
-            }
-        });
-        
-        // Return items to be spawned by enemy manager
-        return droppedItems;
+        console.log(`Enemy died: ${this.type}`);
     }
     
     /**
