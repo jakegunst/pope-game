@@ -20,6 +20,9 @@ class EnemyWalker extends EnemyBase {
         
         super(x, y, walkerConfig);
         
+        // Set enemy type for drop system
+        this.type = 'walker';
+        
         console.log(`Walker spawned at ${x}, ${y}`);
         
         // Walker-specific properties
