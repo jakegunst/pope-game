@@ -474,24 +474,99 @@ class GameEngine {
         // Render weather effects
         this.renderWeather();
 
-        // Render level goal/exit
-if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
+    // Render level goal/exit
+    if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
     const exit = this.currentLevel.goal.position;
     
-    // Draw a golden door/portal as the exit
+    // Cathedral dimensions
+    const cathedralWidth = 80;
+    const cathedralHeight = 100;
+    const baseX = exit.x - cathedralWidth/2;
+    const baseY = exit.y - cathedralHeight;
+    
+    // Skip if not on screen
+    if (baseX + cathedralWidth < this.camera.x || baseX > this.camera.x + this.canvas.width ||
+        baseY + cathedralHeight < this.camera.y || baseY > this.camera.y + this.canvas.height) {
+        return;
+    }
+    
+    // Draw cathedral shadow
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.fillRect(baseX + 5, baseY + 5, cathedralWidth, cathedralHeight);
+    
+    // Draw main cathedral body (stone gray)
+    this.ctx.fillStyle = '#8B7D6B';
+    this.ctx.fillRect(baseX, baseY + 30, cathedralWidth, 70);
+    
+    // Draw cathedral roof (dark red)
+    this.ctx.fillStyle = '#8B2500';
+    this.ctx.beginPath();
+    this.ctx.moveTo(baseX - 10, baseY + 30);
+    this.ctx.lineTo(baseX + cathedralWidth/2, baseY);
+    this.ctx.lineTo(baseX + cathedralWidth + 10, baseY + 30);
+    this.ctx.closePath();
+    this.ctx.fill();
+    
+    // Draw cross on top
     this.ctx.fillStyle = '#FFD700';
-    this.ctx.fillRect(exit.x - 25, exit.y - 50, 50, 50);
+    this.ctx.fillRect(baseX + cathedralWidth/2 - 2, baseY - 15, 4, 15);
+    this.ctx.fillRect(baseX + cathedralWidth/2 - 7, baseY - 10, 14, 4);
     
-    // Add a glow effect
-    this.ctx.strokeStyle = '#FFFF00';
-    this.ctx.lineWidth = 3;
-    this.ctx.strokeRect(exit.x - 25, exit.y - 50, 50, 50);
+    // Draw arched doorway (dark entrance)
+    this.ctx.fillStyle = '#2F2F2F';
+    this.ctx.beginPath();
+    this.ctx.arc(baseX + cathedralWidth/2, baseY + 70, 20, Math.PI, 0, true);
+    this.ctx.rect(baseX + cathedralWidth/2 - 20, baseY + 70, 40, 30);
+    this.ctx.fill();
     
-    // Add "EXIT" text
-    this.ctx.fillStyle = '#000';
-    this.ctx.font = '12px Arial';
+    // Draw stained glass window (circular)
+    const windowCenterX = baseX + cathedralWidth/2;
+    const windowCenterY = baseY + 45;
+    const windowRadius = 12;
+    
+    // Window frame
+    this.ctx.strokeStyle = '#4A4A4A';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.arc(windowCenterX, windowCenterY, windowRadius, 0, Math.PI * 2);
+    this.ctx.stroke();
+    
+    // Stained glass segments (simplified rose window)
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#F7DC6F', '#BB8FCE'];
+    const segments = 6;
+    
+    for (let i = 0; i < segments; i++) {
+        const angle1 = (i * 2 * Math.PI) / segments;
+        const angle2 = ((i + 1) * 2 * Math.PI) / segments;
+        
+        this.ctx.fillStyle = colors[i % colors.length];
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.beginPath();
+        this.ctx.moveTo(windowCenterX, windowCenterY);
+        this.ctx.arc(windowCenterX, windowCenterY, windowRadius - 2, angle1, angle2);
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+    this.ctx.globalAlpha = 1;
+    
+    // Add glow effect around the doorway
+    this.ctx.shadowColor = '#FFD700';
+    this.ctx.shadowBlur = 20;
+    this.ctx.strokeStyle = '#FFD700';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.arc(baseX + cathedralWidth/2, baseY + 70, 22, Math.PI, 0, true);
+    this.ctx.stroke();
+    this.ctx.shadowBlur = 0;
+    
+    // Add "EXIT" text with background
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    this.ctx.fillRect(baseX + cathedralWidth/2 - 20, baseY + cathedralHeight + 5, 40, 20);
+    
+    this.ctx.fillStyle = '#FFD700';
+    this.ctx.font = 'bold 12px Arial';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('SANCTUARY', exit.x, exit.y - 20);
+    this.ctx.fillText('SANCTUARY', baseX + cathedralWidth/2, baseY + cathedralHeight + 18);
 }
     }
     
