@@ -106,7 +106,7 @@ function gameLoop(currentTime) {
     lastTime = currentTime;
     
     // Clear the entire canvas for fresh drawing
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Update game logic
     update();
