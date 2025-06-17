@@ -40,6 +40,7 @@ class MenuScreens {
         titleImg.src = 'assets/images/backgrounds/title-screen.png';
         titleImg.onload = () => {
             this.images.titleScreen = titleImg;
+            console.log('Title screen image loaded successfully');
         };
         
         // Load menu screen image
@@ -47,6 +48,7 @@ class MenuScreens {
         menuImg.src = 'assets/images/backgrounds/menu-screen.png';
         menuImg.onload = () => {
             this.images.menuScreen = menuImg;
+            console.log('Menu screen image loaded successfully');
         };
         
         // Load menu music
@@ -66,13 +68,13 @@ class MenuScreens {
     
     handleInput(e) {
         switch(this.gameEngine.currentState) {
-            case 'START_SCREEN':
+            case 'start_screen':
                 // Any key advances to main menu
-                this.gameEngine.currentState = 'MENU';
+                this.gameEngine.currentState = 'menu';
                 this.startMusic(); // Start music when entering menu
                 break;
                 
-            case 'MENU':
+            case 'menu':
                 this.handleMenuInput(e);
                 break;
         }
@@ -91,9 +93,15 @@ class MenuScreens {
             case 'Enter':
                 const selected = this.menuOptions[this.menuSelection];
                 if (selected.text === 'Play Game') {
-                    // Load the menu screens
-                    this.gameEngine.init('data/levels/test-level-enemies.json');
-                    this.gameEngine.currentState = 'PLAYING';
+                    // Load the test level and initialize game
+                    this.gameEngine.init('data/levels/test-level-enemies.json').then(success => {
+                        if (success) {
+                            console.log('Level loaded successfully, starting game');
+                            // Game state is already set to PLAYING by init()
+                        } else {
+                            console.error('Failed to load level');
+                        }
+                    });
                     // Music continues playing
                 } else {
                     // Show "coming soon" message for disabled options
@@ -118,20 +126,27 @@ class MenuScreens {
     }
     
     render() {
-        console.log('MenuScreens render called, state:', this.gameEngine.currentState);
+        // Don't log every frame - too spammy
         switch(this.gameEngine.currentState) {
-            case 'START_SCREEN':
+            case 'start_screen':
                 this.renderStartScreen();
                 break;
                 
-            case 'MENU':
+            case 'menu':
                 this.renderMainMenu();
                 break;
         }
     }
     
     renderStartScreen() {
-        // Clear canvas
+        // Save the context state
+        this.ctx.save();
+        
+        // TEST: Draw a red rectangle to see if anything renders
+        this.ctx.fillStyle = '#FF0000';
+        this.ctx.fillRect(100, 100, 200, 200);
+        
+        // Clear canvas with black
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -159,10 +174,16 @@ class MenuScreens {
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.font = '20px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Hit any key to start', this.canvas.width/2, this.canvas.height - 100 + floatY);
+        this.ctx.fillText('Press any key to start', this.canvas.width/2, this.canvas.height - 100 + floatY);
+        
+        // Restore context state
+        this.ctx.restore();
     }
     
     renderMainMenu() {
+        // Save the context state
+        this.ctx.save();
+        
         // Clear canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -217,5 +238,8 @@ class MenuScreens {
             this.ctx.fillText('Still working on that...', this.canvas.width/2, this.canvas.height - 110);
             this.ctx.fillText('why don\'t you try "Play game" instead?', this.canvas.width/2, this.canvas.height - 80);
         }
+        
+        // Restore context state
+        this.ctx.restore();
     }
 }
