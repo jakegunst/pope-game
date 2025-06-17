@@ -61,12 +61,15 @@ function init() {
     
     // Create game engine
     gameEngine = new GameEngine(canvas, ctx);
-    window.gameEngine = gameEngine;  // ADD THIS LINE
+    window.gameEngine = gameEngine;
+    
+    // IMPORTANT: Create and attach menu screens BEFORE starting the game loop
+    gameEngine.menuScreens = new MenuScreens(gameEngine);
     
     // Set up keyboard event listeners AFTER game engine exists
     window.addEventListener('keydown', (e) => {
-        // Only handle player input if not in free camera mode
-        if (!gameEngine.debug.freeCamera) {
+        // Only handle player input when playing (not in menus)
+        if (gameEngine.currentState === gameEngine.states.PLAYING && !gameEngine.debug.freeCamera) {
             player.handleKeyDown(e.key);
         }
         // Don't prevent default for debug keys
@@ -76,26 +79,19 @@ function init() {
     });
     
     window.addEventListener('keyup', (e) => {
-        // Only handle player input if not in free camera mode
-        if (!gameEngine.debug.freeCamera) {
+        // Only handle player input when playing (not in menus)
+        if (gameEngine.currentState === gameEngine.states.PLAYING && !gameEngine.debug.freeCamera) {
             player.handleKeyUp(e.key);
         }
     });
     
-    // Load test level
-    gameEngine.init('data/levels/test-level-enemies.json').then(success => {
-        if (success) {
-            console.log('Game engine initialized!');
-            // Start the game loop
-            gameLoop(0);
-        } else {
-            console.error('Failed to initialize game engine');
-        }
-    });
+    // DON'T load the test level here - let the menu handle it!
+    // The menu will call gameEngine.init() when "Play Game" is selected
     
-    // Log successful initialization
+    // Start the game loop immediately
     console.log('Game initialized successfully!');
     console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
+    gameLoop(0);
 }
 
 /**
@@ -130,34 +126,37 @@ function update() {
     // Let game engine handle everything
     gameEngine.update();
     
-    // Update player (physics are now applied inside player.update())
-    player.update();
-    
-    // Get platforms from current level
-    const levelPlatforms = gameEngine.currentLevel ? 
-        gameEngine.currentLevel.platforms : [];
-    
-    // Check collisions with all platforms for PLAYER ONLY
-    levelPlatforms.forEach(platform => {
-        const collision = collisionDetection.checkRectCollision(player, platform);
-        if (collision) {
-            collisionDetection.handlePlatformCollision(player, platform, collision);
-        }
-    });
-    
-    // Update moving platforms
-    levelPlatforms.forEach(platform => {
-        const platType = collisionDetection.platformTypes[platform.type];
-        if (platType && platType.dirX !== undefined) {
-            // Move the platform
-            platform.x += platType.dirX * platType.speed;
-            
-            // Reverse at boundaries (temporary)
-            if (platform.x < 0 || platform.x + platform.width > gameEngine.currentLevel.pixelWidth) {
-                platType.dirX *= -1;
+    // Only update player and physics when actually playing
+    if (gameEngine.currentState === gameEngine.states.PLAYING) {
+        // Update player (physics are now applied inside player.update())
+        player.update();
+        
+        // Get platforms from current level
+        const levelPlatforms = gameEngine.currentLevel ? 
+            gameEngine.currentLevel.platforms : [];
+        
+        // Check collisions with all platforms for PLAYER ONLY
+        levelPlatforms.forEach(platform => {
+            const collision = collisionDetection.checkRectCollision(player, platform);
+            if (collision) {
+                collisionDetection.handlePlatformCollision(player, platform, collision);
             }
-        }
-    });
+        });
+        
+        // Update moving platforms
+        levelPlatforms.forEach(platform => {
+            const platType = collisionDetection.platformTypes[platform.type];
+            if (platType && platType.dirX !== undefined) {
+                // Move the platform
+                platform.x += platType.dirX * platType.speed;
+                
+                // Reverse at boundaries (temporary)
+                if (platform.x < 0 || platform.x + platform.width > gameEngine.currentLevel.pixelWidth) {
+                    platType.dirX *= -1;
+                }
+            }
+        });
+    }
 }
 
 /**
@@ -169,7 +168,7 @@ function draw() {
     gameEngine.render();
     
     // Draw debug info (FPS) - now part of game engine HUD
-    if (gameEngine.debug.showStats) {
+    if (gameEngine.debug.showStats && gameEngine.currentState === gameEngine.states.PLAYING) {
         ctx.fillStyle = 'lime';
         ctx.font = '16px Arial';
         ctx.fillText(`FPS: ${fps}`, 10, 110);
