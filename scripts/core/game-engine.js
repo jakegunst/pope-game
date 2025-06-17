@@ -7,6 +7,7 @@ class GameEngine {
         
         // Game states
         this.states = {
+            START_SCREEN: 'start_screen',  // ADDED
             MENU: 'menu',
             PLAYING: 'playing',
             PAUSED: 'paused',
@@ -16,7 +17,7 @@ class GameEngine {
             VICTORY: 'victory',
             LEVEL_SELECT: 'level_select'
         };
-        this.currentState = this.states.MENU;
+        this.currentState = this.states.START_SCREEN;  // CHANGED from MENU
         this.previousState = null;
         
         // Core systems
@@ -83,6 +84,9 @@ class GameEngine {
         this.saveSlots = [null, null, null];  // 3 save slots
         this.currentSlot = 0;
         
+        // Menu screens handler - ADDED
+        this.menuScreens = null; // Will be initialized in main.js
+        
         // Input handling
         this.setupInputHandlers();
     }
@@ -138,6 +142,12 @@ class GameEngine {
      */
     update() {
         switch (this.currentState) {
+            case this.states.START_SCREEN:  // ADDED
+            case this.states.MENU:           // ADDED
+                if (this.menuScreens) {
+                    this.menuScreens.update(1/60);
+                }
+                break;
             case this.states.PLAYING:
                 this.updatePlaying();
                 break;
@@ -375,6 +385,13 @@ class GameEngine {
     render() {
         // Clear screen
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Render menu screens first (no camera transform needed) - ADDED
+        if ((this.currentState === this.states.START_SCREEN || 
+             this.currentState === this.states.MENU) && this.menuScreens) {
+            this.menuScreens.render();
+            return; // Don't render anything else
+        }
         
         // Save context state
         this.ctx.save();
@@ -627,6 +644,19 @@ class GameEngine {
      */
     setupInputHandlers() {
         window.addEventListener('keydown', (e) => {
+            // Handle menu input first - ADDED
+            if ((this.currentState === this.states.START_SCREEN || 
+                 this.currentState === this.states.MENU) && this.menuScreens) {
+                this.menuScreens.handleInput(e);
+                return;
+            }
+            
+            // Handle ESC to return to menu from game - ADDED
+            if (e.key === 'Escape' && this.currentState === this.states.PLAYING) {
+                this.currentState = this.states.MENU;
+                return;
+            }
+            
             // Pause
             if (e.key === 'p' || e.key === 'P') {
                 if (this.currentState === this.states.PLAYING) {
