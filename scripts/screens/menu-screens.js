@@ -68,11 +68,11 @@ class MenuScreens {
         switch(this.gameEngine.currentState) {
             case 'START_SCREEN':
                 // Any key advances to main menu
-                this.gameEngine.currentState = 'MAIN_MENU';
+                this.gameEngine.currentState = 'MENU';
                 this.startMusic(); // Start music when entering menu
                 break;
                 
-            case 'MAIN_MENU':
+            case 'MENU':
                 this.handleMenuInput(e);
                 break;
         }
@@ -118,12 +118,13 @@ class MenuScreens {
     }
     
     render() {
+        console.log('MenuScreens render called, state:', this.gameEngine.currentState);
         switch(this.gameEngine.currentState) {
             case 'START_SCREEN':
                 this.renderStartScreen();
                 break;
                 
-            case 'MAIN_MENU':
+            case 'MENU':
                 this.renderMainMenu();
                 break;
         }
@@ -158,7 +159,7 @@ class MenuScreens {
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.font = '20px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Press any key to start', this.canvas.width/2, this.canvas.height - 100 + floatY);
+        this.ctx.fillText('Hit any key to start', this.canvas.width/2, this.canvas.height - 100 + floatY);
     }
     
     renderMainMenu() {
