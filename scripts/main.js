@@ -1,6 +1,6 @@
 // main.js - The main entry point for Pope Game
 // This file sets up the game canvas and starts the game loop
-<script src="scripts/screens/menu-screens.js"></script>
+
 // Wait for the page to fully load before starting
 window.addEventListener('load', init);
 
