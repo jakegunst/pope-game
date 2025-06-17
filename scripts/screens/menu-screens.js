@@ -91,8 +91,8 @@ class MenuScreens {
             case 'Enter':
                 const selected = this.menuOptions[this.menuSelection];
                 if (selected.text === 'Play Game') {
-                    // Load the test level and start playing
-                    this.gameEngine.levelLoader.loadLevel('test-level-enemies');
+                    // Load the menu screens
+                    this.gameEngine.init('data/levels/test-level-enemies.json');
                     this.gameEngine.currentState = 'PLAYING';
                     // Music continues playing
                 } else {
