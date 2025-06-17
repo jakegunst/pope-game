@@ -142,10 +142,6 @@ class MenuScreens {
         // Save the context state
         this.ctx.save();
         
-        // TEST: Draw a red rectangle to see if anything renders
-        this.ctx.fillStyle = '#FF0000';
-        this.ctx.fillRect(100, 100, 200, 200);
-        
         // Clear canvas with black
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
