@@ -473,6 +473,26 @@ class GameEngine {
         
         // Render weather effects
         this.renderWeather();
+
+        // Render level goal/exit
+if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
+    const exit = this.currentLevel.goal.position;
+    
+    // Draw a golden door/portal as the exit
+    this.ctx.fillStyle = '#FFD700';
+    this.ctx.fillRect(exit.x - 25, exit.y - 50, 50, 50);
+    
+    // Add a glow effect
+    this.ctx.strokeStyle = '#FFFF00';
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeRect(exit.x - 25, exit.y - 50, 50, 50);
+    
+    // Add "EXIT" text
+    this.ctx.fillStyle = '#000';
+    this.ctx.font = '12px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('SANCTUARY', exit.x, exit.y - 20);
+}
     }
     
     /**
