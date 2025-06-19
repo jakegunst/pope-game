@@ -37,7 +37,34 @@ class Player {
         this.invulnerabilityTime = 0;
         
         // Visual properties
-        this.color = '#D2B48C';  // Tan color
+        this.color = '#D2B48C';  // Tan color (fallback)
+        
+        // Sprite setup
+        this.sprite = new Image();
+        this.sprite.src = 'assets/images/characters/player/pope-sprite-sheet-1.png';
+        this.spriteLoaded = false;
+        this.sprite.onload = () => {
+            this.spriteLoaded = true;
+            console.log('Pope sprite sheet loaded!');
+        };
+        
+        // Sprite sheet configuration
+        this.frameWidth = 32;
+        this.frameHeight = 64;
+        this.frames = {
+            idle1: 0,
+            idle2: 1,
+            walk1: 2,
+            walk2: 3,
+            jump: 4,
+            fall: 5
+        };
+        
+        // Animation state
+        this.currentFrame = this.frames.idle1;
+        this.animationTimer = 0;
+        this.idleAnimationSpeed = 0.05;  // Slower for breathing
+        this.walkAnimationSpeed = 0.15;  // Faster for walking
         
         // Input states
         this.keys = {
@@ -59,11 +86,13 @@ class Player {
             case 'a':
             case 'A':
                 this.keys.left = true;
+                this.facingRight = false;  // Added for sprite flipping
                 break;
             case 'ArrowRight':
             case 'd':
             case 'D':
                 this.keys.right = true;
+                this.facingRight = true;   // Added for sprite flipping
                 break;
             case 'ArrowUp':
             case 'w':
@@ -126,10 +155,7 @@ class Player {
         if (this.keys.left) inputDirection = -1;
         if (this.keys.right) inputDirection = 1;
         
-        // Update facing direction
-        if (inputDirection !== 0) {
-            this.facingRight = inputDirection > 0;
-        }
+        // Update facing direction (removed duplicate since it's in handleKeyDown now)
         
         // Use physics system for movement
         window.physics.applyMovement(this, inputDirection);
@@ -197,6 +223,9 @@ class Player {
         // Update state machine
         this.updateState();
         
+        // Update animation based on state
+        this.updateAnimation();
+        
         // Handle idle timer
         if (this.state === 'idle') {
             this.idleTimer++;
@@ -231,6 +260,50 @@ class Player {
         } else {
             // Default to falling if not grounded and not moving much
             this.state = Math.abs(this.speedY) < 0.5 ? 'idle' : 'falling';
+        }
+    }
+    
+    /**
+     * Update sprite animation based on current state
+     */
+    updateAnimation() {
+        switch(this.state) {
+            case 'idle':
+            case 'longIdle':
+                // Alternate between idle1 and idle2 for breathing effect
+                this.animationTimer += this.idleAnimationSpeed;
+                if (this.animationTimer >= 1) {
+                    this.currentFrame = (this.currentFrame === this.frames.idle1) 
+                        ? this.frames.idle2 
+                        : this.frames.idle1;
+                    this.animationTimer = 0;
+                }
+                break;
+                
+            case 'walking':
+                // Alternate between walk1 and walk2
+                this.animationTimer += this.walkAnimationSpeed;
+                if (this.animationTimer >= 1) {
+                    this.currentFrame = (this.currentFrame === this.frames.walk1) 
+                        ? this.frames.walk2 
+                        : this.frames.walk1;
+                    this.animationTimer = 0;
+                }
+                // Make sure we start with walk1 if coming from another state
+                if (this.currentFrame !== this.frames.walk1 && this.currentFrame !== this.frames.walk2) {
+                    this.currentFrame = this.frames.walk1;
+                }
+                break;
+                
+            case 'jumping':
+                this.currentFrame = this.frames.jump;
+                this.animationTimer = 0;
+                break;
+                
+            case 'falling':
+                this.currentFrame = this.frames.fall;
+                this.animationTimer = 0;
+                break;
         }
     }
     
@@ -302,22 +375,46 @@ class Player {
      * Called every frame from main.js
      */
     draw(ctx) {
+        ctx.save();
+        
         // Flash when invulnerable
         if (this.invulnerable && this.invulnerabilityTime % 8 < 4) {
             ctx.globalAlpha = 0.5;
         }
         
-        // Draw main body
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Draw eye to show facing direction
-        ctx.fillStyle = 'black';
-        let eyeX = this.facingRight ? 
-            this.x + this.width - 8 : 
-            this.x + 4;
-        let eyeY = this.y + 15;
-        ctx.fillRect(eyeX, eyeY, 4, 4);
+        if (this.spriteLoaded) {
+            // Handle sprite flipping for direction
+            if (!this.facingRight) {
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    this.sprite,
+                    this.currentFrame * this.frameWidth, 0,  // Source position
+                    this.frameWidth, this.frameHeight,       // Source size
+                    -this.x - this.width, this.y,           // Flipped position
+                    this.width, this.height                  // Display size
+                );
+            } else {
+                ctx.drawImage(
+                    this.sprite,
+                    this.currentFrame * this.frameWidth, 0,  // Source position
+                    this.frameWidth, this.frameHeight,       // Source size
+                    this.x, this.y,                          // Position
+                    this.width, this.height                  // Display size
+                );
+            }
+        } else {
+            // Fallback: draw colored rectangle while sprite loads
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            // Draw eye to show facing direction
+            ctx.fillStyle = 'black';
+            let eyeX = this.facingRight ? 
+                this.x + this.width - 8 : 
+                this.x + 4;
+            let eyeY = this.y + 15;
+            ctx.fillRect(eyeX, eyeY, 4, 4);
+        }
         
         // Draw charge indicator when charging
         if (this.isCharging && this.chargeTime > 0) {
@@ -336,10 +433,14 @@ class Player {
             ctx.globalAlpha = 1;
         }
         
+        ctx.restore();
+        
         // Draw state indicator (temporary - for debugging)
-        ctx.fillStyle = 'black';
-        ctx.font = '12px Arial';
-        ctx.fillText(this.state, this.x - 10, this.y - 5);
+        if (window.gameEngine && window.gameEngine.debug.enabled) {
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            ctx.fillText(this.state, this.x - 10, this.y - 5);
+        }
         
         // Draw projectiles
         this.projectiles.forEach(proj => {
