@@ -96,16 +96,16 @@ class GameEngine {
     };
     
     // Pequods building configuration
-    this.exitConfig = {
-        width: 128,      // Width of your sprite
-        height: 128,     // Height of your sprite
-        doorBounds: {    // The actual door area
-            offsetX: 48,    // Door starts 48px from left
-            offsetY: 96,    // Door starts 96px from top  
-            width: 32,      // Door is 32px wide
-            height: 32      // Door is 32px tall
-        }
-    };
+this.exitConfig = {
+    width: 128,      // Width of your sprite
+    height: 128,     // Height of your sprite
+    doorBounds: {    // The actual door area
+        offsetX: 54,    // Door starts more centered
+        offsetY: 108,   // Door starts lower (closer to bottom)
+        width: 20,      // Narrower door
+        height: 20      // Shorter door
+    }
+};
     
     // Input handling
     this.setupInputHandlers();
@@ -497,10 +497,23 @@ renderGame() {
     }
     
     // Render collectibles
-    this.collectiblesManager.draw(this.ctx);
-    
-    // Render weather effects
-    this.renderWeather();
+this.collectiblesManager.draw(this.ctx);
+
+// Render level goal/exit BEFORE player - MOVED UP!
+if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
+    // ... all the Pequod's rendering code ...
+}
+
+// Render player AFTER exit so player appears on top
+player.draw(this.ctx);
+
+// Render enemies
+if (window.enemyManager) {
+    window.enemyManager.draw(this.ctx);
+}
+
+// Render weather effects
+this.renderWeather();
 
     // Render level goal/exit - REPLACED WITH PEQUOD'S PIZZA
     if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
