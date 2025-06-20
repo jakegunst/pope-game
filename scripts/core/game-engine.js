@@ -942,35 +942,34 @@ skipLevel() {
 }
 
 /**
- * Restart the current level
- */
-restartLevel() {
-    // Reset player stats
-    this.playerStats.lives = 3;
-    this.playerStats.health = this.playerStats.maxHealth;
-    
-    // Reset level state
-    this.levelTime = 0;
-    this.levelLoader.currentCheckpoint = 0;
-    this.levelLoader.collectedItems.clear();
-    
-    // Clear and reinitialize collectibles
-    this.collectiblesManager.init(this.currentLevel);
-    
-    // Clear and reinitialize enemies
-    if (window.enemyManager) {
-        window.enemyManager.clear();
-        window.enemyManager.init(this.currentLevel);
+     * Restart the current level
+     */
+    restartLevel() {
+        // Reset player stats
+        this.playerStats.lives = 3;
+        this.playerStats.health = this.playerStats.maxHealth;
+        
+        // Reset level state
+        this.levelTime = 0;
+        this.levelLoader.currentCheckpoint = 0;
+        this.levelLoader.collectedItems.clear();
+        
+        // Clear and reinitialize collectibles
+        this.collectiblesManager.init(this.currentLevel);
+        
+        // Clear and reinitialize enemies
+        if (window.enemyManager) {
+            window.enemyManager.clear();
+            window.enemyManager.init(this.currentLevel);
+        }
+        
+        // Respawn player
+        this.respawnPlayer();
+        
+        // Reset state
+        this.currentState = this.states.PLAYING;
     }
-    
-    // Respawn player
-    this.respawnPlayer();
-    
-    // Reset state
-    this.currentState = this.states.PLAYING;
-}
-
-}
+} // This closes the GameEngine class
 
 // Export the GameEngine class
 window.GameEngine = GameEngine;
