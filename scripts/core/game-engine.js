@@ -969,7 +969,6 @@ restartLevel() {
     // Reset state
     this.currentState = this.states.PLAYING;
 }
-```
 
 }
 
