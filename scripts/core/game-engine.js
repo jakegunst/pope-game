@@ -1,23 +1,21 @@
 // game-engine.js - Core game engine that manages everything
 
 class GameEngine {
-constructor(canvas, ctx) {
-this.canvas = canvas;
-this.ctx = ctx;
-
-```
-    // Game states
-    this.states = {
-        START_SCREEN: 'start_screen',  // ADDED
-        MENU: 'menu',
-        PLAYING: 'playing',
-        PAUSED: 'paused',
-        CUTSCENE: 'cutscene',
-        BOSS_FIGHT: 'boss_fight',
-        GAME_OVER: 'game_over',
-        VICTORY: 'victory',
-        LEVEL_SELECT: 'level_select'
-    };
+    constructor(canvas, ctx) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        // Game states
+        this.states = {
+            START_SCREEN: 'start_screen',  // ADDED
+            MENU: 'menu',
+            PLAYING: 'playing',
+            PAUSED: 'paused',
+            CUTSCENE: 'cutscene',
+            BOSS_FIGHT: 'boss_fight',
+            GAME_OVER: 'game_over',
+            VICTORY: 'victory',
+            LEVEL_SELECT: 'level_select'
+        };
     this.currentState = this.states.START_SCREEN;  // CHANGED from MENU
     this.previousState = null;
     
