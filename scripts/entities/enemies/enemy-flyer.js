@@ -18,7 +18,7 @@ class EnemyFlyer extends EnemyBase {
         this.frequency = 0.02;
         this.patternTimer = 0;
         this.diveSpeed = 5;
-        this.isStomppable = false; // Can't stomp flying enemies
+        this.vulnerabilities = ['stomp'];  // Flying enemies can be stomped
         
         // Override frame settings for condor
         this.frameWidth = 40;
