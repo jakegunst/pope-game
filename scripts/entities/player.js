@@ -2,11 +2,11 @@
 
 class Player {
     constructor(x, y) {
-        // Position and dimensions
+        // Position and dimensions - 75% bigger
         this.x = x;
         this.y = y;
-        this.width = 64; // double height
-        this.height = 128; // double width
+        this.width = 56;   // was 32, now 75% bigger
+        this.height = 112; // was 64, now 75% bigger
         
         // Movement properties
         this.speedX = 0;  // Current horizontal velocity
@@ -321,7 +321,7 @@ class Player {
         const maxSpeed = 15;
         const speed = minSpeed + (maxSpeed - minSpeed) * chargePower;
         
-        // Create projectile
+        // Create projectile - adjust position for larger sprite
         const projectile = {
             x: this.x + (this.facingRight ? this.width : -8),
             y: this.y + this.height / 3,
@@ -389,17 +389,17 @@ class Player {
                 ctx.drawImage(
                     this.sprite,
                     this.currentFrame * this.frameWidth, 0,  // Source position
-                    this.frameWidth, this.frameHeight,       // Source size
+                    this.frameWidth, this.frameHeight,       // Source size (32x64)
                     -this.x - this.width, this.y,           // Flipped position
-                    this.width, this.height                  // Display size
+                    this.width, this.height                  // Display size (56x112)
                 );
             } else {
                 ctx.drawImage(
                     this.sprite,
                     this.currentFrame * this.frameWidth, 0,  // Source position
-                    this.frameWidth, this.frameHeight,       // Source size
+                    this.frameWidth, this.frameHeight,       // Source size (32x64)
                     this.x, this.y,                          // Position
-                    this.width, this.height                  // Display size
+                    this.width, this.height                  // Display size (56x112)
                 );
             }
         } else {
@@ -407,13 +407,13 @@ class Player {
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
             
-            // Draw eye to show facing direction
+            // Draw eye to show facing direction (scaled for bigger size)
             ctx.fillStyle = 'black';
             let eyeX = this.facingRight ? 
-                this.x + this.width - 8 : 
-                this.x + 4;
-            let eyeY = this.y + 15;
-            ctx.fillRect(eyeX, eyeY, 4, 4);
+                this.x + this.width - 14 : 
+                this.x + 7;
+            let eyeY = this.y + 26;
+            ctx.fillRect(eyeX, eyeY, 7, 7);
         }
         
         // Draw charge indicator when charging
