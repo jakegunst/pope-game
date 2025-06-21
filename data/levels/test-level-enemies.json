@@ -6,7 +6,7 @@
     "tileSize": 32,
     "spawn": {
         "x": 100,
-        "y": 550
+        "y": 500  // was 550, moved up 50 pixels
     },
     "goal": {
         "type": "reach_exit",
