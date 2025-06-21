@@ -1,293 +1,213 @@
-// enemy-flyer.js - Flying enemy with various movement patterns
+// enemy-flyer.js - Flying enemy with various patterns
 
 class EnemyFlyer extends EnemyBase {
     constructor(x, y, config = {}) {
-        // Set flyer defaults
-        const flyerConfig = {
-            width: 32,
-            height: 24,
-            speed: 2.5,  // Faster than walkers!
-            health: 1,
-            damage: 10,
-            color: '#9370DB',  // Medium purple
-            affectedByGravity: false,  // Flyers ignore gravity
-            collideWithPlatforms: false,  // Can fly through platforms
-            vulnerabilities: ['projectile', 'stomp'],  // CAN be stomped at low points!
-            drops: [
-                { type: 'coin', chance: 0.3 },
-                { type: 'powerup', chance: 0.05 }
-            ],
-            ...config
-        };
+        // Set defaults for flyer
+        config.useGravity = false;
+        config.health = 2;
+        config.speed = config.speed || 1.5;
         
-        super(x, y, flyerConfig);
+        super(x, y, config);
         
-        // Set enemy type for drop system
-        this.type = 'flyer';
-        
-        // Flying patterns
-        this.flyPattern = config.flyPattern || 'sine';  // 'sine', 'circle', 'hover', 'dive'
-        this.baseY = y;  // Remember starting Y position
-        this.baseX = x;  // For circular pattern
-        
-        // Direction for movement
-        this.direction = config.direction || 1;  // 1 = right, -1 = left
-        
-        // Pattern parameters - BIGGER WAVES AND FASTER!
-        this.amplitude = config.amplitude || 120;  // Much bigger wave height
-        this.frequency = config.frequency || 0.04;  // Faster sine wave
+        // Flyer specific properties
+        this.width = 40;
+        this.height = 30;
+        this.baseY = y;
+        this.flyPattern = config.flyPattern || 'sine';
+        this.amplitude = config.amplitude || 100;
+        this.frequency = 0.02;
         this.patternTimer = 0;
+        this.diveSpeed = 5;
+        this.isStomppable = false; // Can't stomp flying enemies
         
-        // Dive attack properties
-        this.diveSpeed = 10;  // Fast diving!
-        this.isDiving = false;
-        this.diveRecoveryTime = 60;
-        this.diveTimer = 0;
-        this.diveTarget = { x: 0, y: 0 };
-        
-        // Hover properties
-        this.hoverRange = config.hoverRange || 150;
-        this.hoverHeight = config.hoverHeight || 100;
+        // Override frame settings for condor
+        this.frameWidth = 40;
+        this.frameHeight = 30;
+        this.frameCount = 1; // Condor only has 1 frame
     }
     
     /**
-     * Update AI behavior
+     * Load the flyer sprite (condor)
+     */
+    loadSprite() {
+        this.sprite = new Image();
+        this.sprite.src = 'assets/images/enemies/flyer-normal.png';
+        this.sprite.onload = () => {
+            this.spriteLoaded = true;
+            console.log('Flyer (condor) sprite loaded');
+        };
+    }
+    
+    /**
+     * Get color for flyer variant (fallback)
+     */
+    getColorForVariant() {
+        return '#8B4513'; // Brown for bird
+    }
+    
+    /**
+     * Update flyer-specific behavior
+     */
+    update() {
+        if (!this.isAlive) return;
+        
+        // Update invulnerability
+        if (this.invulnerabilityTime > 0) {
+            this.invulnerabilityTime--;
+            this.invulnerable = this.invulnerabilityTime > 0;
+        }
+        
+        // Update pattern timer
+        this.patternTimer += this.frequency;
+        
+        // Update AI (flying patterns)
+        this.updateAI();
+        
+        // Update position
+        this.x += this.speedX;
+        this.y += this.speedY;
+        
+        // No animation update needed (single frame)
+        
+        // Check if out of bounds
+        if (this.y > 1000 || this.y < -200) {
+            this.isAlive = false;
+        }
+    }
+    
+    /**
+     * Override AI for flying patterns
      */
     updateAI() {
-        this.patternTimer++;
-        
         switch(this.flyPattern) {
             case 'sine':
-                this.sineWavePattern();
-                break;
-            case 'circle':
-                this.circularPattern();
-                break;
-            case 'hover':
-                this.hoverPattern();
+                this.sinePattern();
                 break;
             case 'dive':
                 this.divePattern();
                 break;
+            case 'hover':
+                this.hoverPattern();
+                break;
+            case 'circle':
+                this.circlePattern();
+                break;
             default:
-                this.sineWavePattern();
+                this.sinePattern();
         }
     }
     
     /**
-     * Sine wave movement pattern - IMPROVED!
+     * Sine wave pattern
      */
-    sineWavePattern() {
-        // Horizontal movement - ALWAYS MOVING!
-        this.x += this.baseSpeed * this.direction;
+    sinePattern() {
+        // Horizontal movement
+        this.speedX = this.baseSpeed * this.direction;
         
-        // Vertical sine wave - now goes low enough to be stomped!
-        const waveOffset = Math.sin(this.patternTimer * this.frequency) * this.amplitude;
-        this.y = this.baseY + waveOffset;
+        // Vertical sine wave
+        this.y = this.baseY + Math.sin(this.patternTimer) * this.amplitude;
         
-        // Make sure flyer comes down low enough to be reachable
-        // At the bottom of the wave, should be about jump height above ground
-        const lowestPoint = this.baseY + this.amplitude;
-        const groundLevel = 576; // Approximate ground level
-        
-        // If configured to be stompable, ensure it comes within reach
-        if (this.vulnerabilities.includes('stomp')) {
-            // Ensure the lowest point is reachable (about 100 pixels above ground)
-            const desiredLowestPoint = groundLevel - 100;
-            if (lowestPoint < desiredLowestPoint) {
-                // Adjust base Y to make it reachable
-                this.baseY = desiredLowestPoint - this.amplitude;
-            }
-        }
-        
-        // Turn around at screen edges or patrol distance
+        // Turn around at patrol boundaries
         if (this.patrolDistance > 0) {
-            const distanceFromStart = Math.abs(this.x - this.baseX);
-            if (distanceFromStart >= this.patrolDistance) {
-                this.direction *= -1;
-                this.baseX = this.x; // Reset base to prevent getting stuck
-            }
-        } else {
-            // If no patrol distance, turn at screen edges
-            if (this.x <= 0 || this.x >= 1600) {
+            const distanceFromStart = Math.abs(this.x - this.startX);
+            if (distanceFromStart > this.patrolDistance) {
                 this.direction *= -1;
             }
         }
     }
     
     /**
-     * Circular movement pattern
-     */
-    circularPattern() {
-        const radius = this.amplitude;
-        const angle = this.patternTimer * this.frequency;
-        
-        // Calculate position on circle
-        this.x = this.baseX + Math.cos(angle) * radius;
-        this.y = this.baseY + Math.sin(angle) * radius;
-        
-        // No speed needed, we're setting position directly
-        this.speedX = 0;
-        this.speedY = 0;
-    }
-    
-    /**
-     * Hover near player and occasionally dive
-     */
-    hoverPattern() {
-        const player = window.player;
-        if (!player) return;
-        
-        if (this.canSeePlayer(player)) {
-            // Hover above player
-            const targetX = player.x;
-            const targetY = player.y - this.hoverHeight;
-            
-            // Smooth movement towards hover position
-            const dx = targetX - this.x;
-            const dy = targetY - this.y;
-            
-            this.speedX = dx * 0.02;  // Smooth following
-            this.speedY = dy * 0.02;
-            
-            // Limit speed
-            const maxHoverSpeed = 2;
-            this.speedX = Math.max(-maxHoverSpeed, Math.min(maxHoverSpeed, this.speedX));
-            this.speedY = Math.max(-maxHoverSpeed, Math.min(maxHoverSpeed, this.speedY));
-            
-            // Update position
-            this.x += this.speedX;
-            this.y += this.speedY;
-        } else {
-            // Return to base position
-            this.speedX *= 0.95;
-            this.speedY *= 0.95;
-            this.x += this.speedX;
-            this.y += this.speedY;
-        }
-    }
-    
-    /**
-     * Dive bomb attack pattern
+     * Dive attack pattern
      */
     divePattern() {
-        const player = window.player;
-        if (!player) return;
+        if (!window.player) {
+            this.hoverPattern();
+            return;
+        }
         
-        if (this.isDiving) {
+        const dx = window.player.x - this.x;
+        const dy = window.player.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (this.state === 'diving') {
             // Continue dive
-            const dx = this.diveTarget.x - this.x;
-            const dy = this.diveTarget.y - this.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            this.speedY = this.diveSpeed;
             
-            if (dist > 10) {
-                // Keep diving
-                this.speedX = (dx / dist) * this.diveSpeed;
-                this.speedY = (dy / dist) * this.diveSpeed;
-                this.x += this.speedX;
-                this.y += this.speedY;
-            } else {
-                // End dive
-                this.isDiving = false;
-                this.diveTimer = this.diveRecoveryTime;
+            // Pull up when close to ground
+            if (this.y > this.baseY + this.amplitude || dy < -50) {
+                this.state = 'recovering';
+                this.speedY = -this.diveSpeed / 2;
+            }
+        } else if (this.state === 'recovering') {
+            // Return to base height
+            if (this.y < this.baseY) {
+                this.y = this.baseY;
+                this.speedY = 0;
+                this.state = 'hovering';
             }
         } else {
-            // Normal flying
-            this.sineWavePattern();
+            // Hover and watch for player
+            this.hoverPattern();
             
-            // Check if we should dive
-            if (this.diveTimer > 0) {
-                this.diveTimer--;
-            } else if (this.canSeePlayer(player)) {
-                const dirToPlayer = this.getDirectionToPlayer(player);
+            // Start dive if player is below and in range
+            if (distance < this.detectionRange && dy > 50 && Math.abs(dx) < 100) {
+                this.state = 'diving';
+                this.direction = dx > 0 ? 1 : -1;
+            }
+        }
+    }
+    
+    /**
+     * Hover in place pattern
+     */
+    hoverPattern() {
+        // Small circular motion
+        this.x = this.startX + Math.cos(this.patternTimer * 2) * 20;
+        this.y = this.baseY + Math.sin(this.patternTimer * 2) * 10;
+        
+        // Face player if nearby
+        if (window.player) {
+            const dx = window.player.x - this.x;
+            if (Math.abs(dx) < this.detectionRange) {
+                this.direction = dx > 0 ? 1 : -1;
+            }
+        }
+    }
+    
+    /**
+     * Circular pattern
+     */
+    circlePattern() {
+        const radius = this.amplitude;
+        this.x = this.startX + Math.cos(this.patternTimer) * radius;
+        this.y = this.baseY + Math.sin(this.patternTimer) * radius;
+        
+        // Face direction of movement
+        this.direction = Math.cos(this.patternTimer + Math.PI/2) > 0 ? 1 : -1;
+    }
+    
+    /**
+     * Override collision to prevent stomping
+     */
+    checkPlayerCollision() {
+        if (!window.player || !this.isAlive) return;
+        
+        const collision = window.collisionDetection.checkRectCollision(this, window.player);
+        if (collision) {
+            // Always damage player (can't stomp flyers)
+            if (!window.player.invulnerable) {
+                window.gameEngine.playerStats.health -= this.damage * 10;
+                window.player.invulnerable = true;
+                window.player.invulnerabilityTime = 60;
                 
-                // Dive if player is below us
-                if (dirToPlayer.y > 50 && Math.abs(dirToPlayer.x) < 100) {
-                    this.startDive(player);
-                }
+                // Knockback player
+                const knockbackDir = window.player.x < this.x ? -1 : 1;
+                window.player.speedX = knockbackDir * 8;
+                window.player.speedY = -5;
             }
-        }
-    }
-    
-    /**
-     * Start a dive attack
-     */
-    startDive(player) {
-        this.isDiving = true;
-        this.diveTarget = {
-            x: player.x + player.width / 2,
-            y: player.y + player.height / 2
-        };
-        
-        // Already vulnerable to stomp during normal flight
-    }
-    
-    /**
-     * Override collision handling
-     */
-    onCollisionWithPlatform(platform, collision) {
-        // Most flyers ignore platforms
-        if (this.collideWithPlatforms) {
-            super.onCollisionWithPlatform(platform, collision);
-        }
-        
-        // But diving flyers stop when hitting ground
-        if (this.isDiving && collision.fromTop) {
-            this.isDiving = false;
-            this.diveTimer = this.diveRecoveryTime;
-            this.speedY = -5;  // Bounce up
-        }
-    }
-    
-    /**
-     * Override draw to show dive state and better wings
-     */
-    draw(ctx) {
-        // Draw wings BEHIND body
-        if (!this.isDead) {
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = 3;
-            
-            // Wing animation - flap faster
-            const wingOffset = Math.sin(this.patternTimer * 0.3) * 8;
-            
-            // Left wing
-            ctx.beginPath();
-            ctx.moveTo(this.x + 5, this.y + this.height/2);
-            ctx.lineTo(this.x - 12, this.y + this.height/2 + wingOffset);
-            ctx.lineTo(this.x - 8, this.y + this.height/2 + wingOffset + 5);
-            ctx.closePath();
-            ctx.fillStyle = this.color;
-            ctx.fill();
-            
-            // Right wing
-            ctx.beginPath();
-            ctx.moveTo(this.x + this.width - 5, this.y + this.height/2);
-            ctx.lineTo(this.x + this.width + 12, this.y + this.height/2 - wingOffset);
-            ctx.lineTo(this.x + this.width + 8, this.y + this.height/2 - wingOffset + 5);
-            ctx.closePath();
-            ctx.fill();
-        }
-        
-        // Rotate if diving
-        if (this.isDiving) {
-            ctx.save();
-            const angle = Math.atan2(this.speedY, this.speedX);
-            ctx.translate(this.x + this.width/2, this.y + this.height/2);
-            ctx.rotate(angle);
-            ctx.translate(-this.width/2, -this.height/2);
-            
-            // Draw body
-            ctx.fillStyle = 'red';  // Red when diving
-            ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
-            
-            ctx.restore();
-        } else {
-            // Draw body normally
-            super.draw(ctx);
         }
     }
 }
 
-// Export the EnemyFlyer class
+// Export
 window.EnemyFlyer = EnemyFlyer;
