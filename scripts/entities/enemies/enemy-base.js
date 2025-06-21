@@ -1,202 +1,270 @@
-// enemy-base.js - Base class for all enemies with shared functionality
+// enemy-base.js - Base class for all enemies with sprite support
 
 class EnemyBase {
     constructor(x, y, config = {}) {
-        // Position and dimensions
+        // Position and size
         this.x = x;
         this.y = y;
-        this.width = config.width || 32;
-        this.height = config.height || 32;
-        
-        // Enemy type (used by drop system)
-        this.type = config.type || 'basic';
+        this.width = 32;
+        this.height = 32;
         
         // Movement
         this.speedX = 0;
         this.speedY = 0;
-        this.baseSpeed = config.speed || 2;
+        this.baseSpeed = config.speed || 1;
+        this.direction = config.startDirection || 1; // 1 = right, -1 = left
         
-        // Health system
-        this.maxHealth = config.health || 1;
-        this.health = this.maxHealth;
-        this.showHealthBar = this.maxHealth > 1;
+        // State
+        this.state = 'idle';
+        this.health = config.health || 1;
+        this.maxHealth = this.health;
+        this.isAlive = true;
+        this.isGrounded = false;
         
-        // Combat properties
-        this.damage = config.damage || 10;  // Damage dealt to player
+        // AI Configuration
+        this.aiType = config.aiType || 'patrol';
+        this.detectionRange = config.detectionRange || 150;
+        this.patrolDistance = config.patrolDistance || 100;
+        this.startX = x;
+        this.variant = config.variant || 'normal';
+        
+        // Combat
+        this.damage = config.damage || 1;
         this.invulnerable = false;
         this.invulnerabilityTime = 0;
-        this.maxInvulnerabilityTime = 30;  // 0.5 seconds at 60fps
+        this.knockbackPower = config.knockbackPower || 5;
         
-        // Vulnerability system
-        this.vulnerabilities = config.vulnerabilities || ['projectile', 'stomp'];
-        // Options: 'projectile', 'stomp', 'special', 'none'
+        // Physics
+        this.useGravity = config.useGravity !== false;
+        this.turnAtEdges = config.turnAtEdges !== false;
+        this.turnCooldown = 0;
         
-        // Visual properties
-        this.color = config.color || '#8B0000';  // Dark red default
-        this.variant = config.variant || 'normal';  // For color variants
-        this.facingRight = true;
+        // Visual
+        this.color = this.getColorForVariant();
         
-        // State machine
-        this.state = 'idle';
-        this.stateTimer = 0;
+        // Sprite setup
+        this.sprite = null;
+        this.spriteLoaded = false;
+        this.currentFrame = 0;
+        this.animationTimer = 0;
+        this.animationSpeed = 0.1;
+        this.frameCount = 2; // Most enemies have 2 frames
+        this.frameWidth = 32;
+        this.frameHeight = 32;
         
-        // Physics flags
-        this.isGrounded = false;
-        this.affectedByGravity = config.affectedByGravity !== false;
-        this.collideWithPlatforms = config.collideWithPlatforms !== false;
-        
-        // AI properties
-        this.aiType = config.aiType || 'pattern';  // 'pattern', 'chase', 'smart'
-        this.detectionRange = config.detectionRange || 200;
-        this.attackRange = config.attackRange || 50;
-        
-        // Death animation
-        this.isDead = false;
-        this.deathTimer = 0;
-        this.deathDuration = 30;
-        
-        // Flashing when hit
-        this.flashTimer = 0;
-        this.flashDuration = 10;
+        // Load sprite based on enemy type and variant
+        this.loadSprite();
     }
     
     /**
-     * Base update - called every frame
+     * Load the appropriate sprite for this enemy
+     */
+    loadSprite() {
+        // This will be overridden by subclasses
+    }
+    
+    /**
+     * Get color based on variant (fallback for when sprites aren't loaded)
+     */
+    getColorForVariant() {
+        switch(this.variant) {
+            case 'strong': return '#4169E1'; // Blue
+            case 'fast': return '#FF4500';   // Red
+            default: return '#32CD32';       // Green
+        }
+    }
+    
+    /**
+     * Update enemy logic
      */
     update() {
+        if (!this.isAlive) return;
+        
         // Update invulnerability
         if (this.invulnerabilityTime > 0) {
             this.invulnerabilityTime--;
             this.invulnerable = this.invulnerabilityTime > 0;
         }
         
-        // Update flash timer
-        if (this.flashTimer > 0) {
-            this.flashTimer--;
-        }
-        
-        // Update death animation
-        if (this.isDead) {
-            this.deathTimer++;
-            if (this.deathTimer >= this.deathDuration) {
-                this.shouldRemove = true;
+        // Apply gravity if needed
+        if (this.useGravity) {
+            this.speedY += window.physics.gravity;
+            if (this.speedY > window.physics.maxFallSpeed) {
+                this.speedY = window.physics.maxFallSpeed;
             }
-            return; // Don't update AI when dead
         }
         
-        // Apply gravity if needed (BEFORE movement)
-        if (this.affectedByGravity && !this.isGrounded) {
-            window.physics.applyGravity(this);
-        }
-        
-        // Update state timer
-        this.stateTimer++;
-        
-        // Let subclasses handle their specific AI
+        // Update AI
         this.updateAI();
         
-        // Apply movement
+        // Update position
         this.x += this.speedX;
         this.y += this.speedY;
         
-        // Update facing direction
-        if (this.speedX !== 0) {
-            this.facingRight = this.speedX > 0;
+        // Update animation
+        this.updateAnimation();
+        
+        // Check if fell off the world
+        if (this.y > 1000) {
+            this.isAlive = false;
+        }
+        
+        // Update turn cooldown
+        if (this.turnCooldown > 0) {
+            this.turnCooldown--;
         }
     }
     
     /**
-     * AI update - override in subclasses
+     * Update sprite animation
+     */
+    updateAnimation() {
+        if (!this.spriteLoaded || this.frameCount <= 1) return;
+        
+        this.animationTimer += this.animationSpeed;
+        if (this.animationTimer >= 1) {
+            this.currentFrame = (this.currentFrame + 1) % this.frameCount;
+            this.animationTimer = 0;
+        }
+    }
+    
+    /**
+     * Update AI behavior
      */
     updateAI() {
-        // To be implemented by subclasses
+        switch(this.aiType) {
+            case 'patrol':
+                this.patrolAI();
+                break;
+            case 'chase':
+                this.chaseAI();
+                break;
+            case 'idle':
+                this.speedX = 0;
+                break;
+        }
     }
     
     /**
-     * Take damage from a source
-     * @param {number} amount - Damage amount
-     * @param {string} type - Damage type ('projectile', 'stomp', etc)
-     * @returns {boolean} - Whether damage was dealt
+     * Basic patrol AI
      */
-    takeDamage(amount, type) {
-        // Check if vulnerable to this damage type
-        if (!this.vulnerabilities.includes(type)) {
-            return false;
+    patrolAI() {
+        // Move in current direction
+        this.speedX = this.baseSpeed * this.direction;
+        
+        // Turn around at patrol boundaries
+        if (this.patrolDistance > 0) {
+            const distanceFromStart = Math.abs(this.x - this.startX);
+            if (distanceFromStart > this.patrolDistance && this.turnCooldown === 0) {
+                this.turn();
+            }
+        }
+    }
+    
+    /**
+     * Chase player AI
+     */
+    chaseAI() {
+        if (!window.player) {
+            this.patrolAI();
+            return;
         }
         
-        // Check if invulnerable
-        if (this.invulnerable || this.isDead) {
-            return false;
-        }
+        const dx = window.player.x - this.x;
+        const dy = window.player.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Apply damage
+        if (distance < this.detectionRange) {
+            // Chase player
+            this.direction = dx > 0 ? 1 : -1;
+            this.speedX = this.baseSpeed * this.direction * 1.5; // Move faster when chasing
+            this.state = 'chasing';
+        } else {
+            // Return to patrol
+            this.patrolAI();
+            this.state = 'patrolling';
+        }
+    }
+    
+    /**
+     * Turn around
+     */
+    turn() {
+        if (this.turnCooldown > 0) return;
+        this.direction *= -1;
+        this.turnCooldown = 30; // Half second cooldown
+    }
+    
+    /**
+     * Take damage
+     */
+    takeDamage(amount, fromX) {
+        if (this.invulnerable || !this.isAlive) return;
+        
         this.health -= amount;
-        this.flashTimer = this.flashDuration;
+        this.invulnerable = true;
+        this.invulnerabilityTime = 30;
+        
+        // Knockback
+        const knockbackDir = this.x < fromX ? -1 : 1;
+        this.speedX = knockbackDir * this.knockbackPower;
         
         if (this.health <= 0) {
             this.die();
-        } else {
-            // Become temporarily invulnerable
-            this.invulnerable = true;
-            this.invulnerabilityTime = this.maxInvulnerabilityTime;
-            
-            // Knockback or other effects could go here
-            this.onHit(type);
         }
-        
-        return true;
     }
     
     /**
-     * Called when hit but not killed
-     */
-    onHit(damageType) {
-        // Override in subclasses for special hit reactions
-    }
-    
-    /**
-     * Handle death
+     * Die and drop loot
      */
     die() {
-        this.isDead = true;
-        this.deathTimer = 0;
-        this.speedX = 0;
-        this.speedY = 0;
+        this.isAlive = false;
         
-        // Could trigger death sound/particles here
-        console.log(`Enemy died: ${this.type}`);
-    }
-    
-    /**
-     * Check if player is in detection range
-     */
-    canSeePlayer(player) {
-        const dx = player.x - this.x;
-        const dy = player.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        // Drop loot
+        const drop = Math.random();
+        let dropType = null;
         
-        return distance <= this.detectionRange;
+        if (drop < 0.75) {
+            dropType = 'tithe'; // 75% chance
+        } else {
+            dropType = 'beer';  // 25% chance
+        }
+        
+        if (dropType && window.gameEngine) {
+            window.gameEngine.collectiblesManager.spawnCollectible(
+                dropType, 
+                this.x + this.width/2, 
+                this.y
+            );
+        }
     }
     
     /**
-     * Get direction to player
+     * Check collision with player
      */
-    getDirectionToPlayer(player) {
-        return {
-            x: player.x - this.x,
-            y: player.y - this.y
-        };
-    }
-    
-    /**
-     * Basic collision response
-     */
-    onCollisionWithPlatform(platform, collision) {
-        if (collision.fromTop && this.speedY >= 0) {
-            console.log(`Enemy collision with platform at y:${platform.y}, setting enemy y to ${platform.y - this.height}`);
-            this.y = platform.y - this.height;
-            this.speedY = 0;
-            this.isGrounded = true;
+    checkPlayerCollision() {
+        if (!window.player || !this.isAlive) return;
+        
+        const collision = window.collisionDetection.checkRectCollision(this, window.player);
+        if (collision) {
+            // Check if player is stomping
+            if (window.player.speedY > 0 && window.player.y < this.y) {
+                this.takeDamage(1, window.player.x);
+                window.player.speedY = -10; // Bounce player up
+                return;
+            }
+            
+            // Otherwise damage player
+            if (!window.player.invulnerable) {
+                window.gameEngine.playerStats.health -= this.damage * 10;
+                window.player.invulnerable = true;
+                window.player.invulnerabilityTime = 60;
+                
+                // Knockback player
+                const knockbackDir = window.player.x < this.x ? -1 : 1;
+                window.player.speedX = knockbackDir * 8;
+                window.player.speedY = -5;
+            }
         }
     }
     
@@ -204,77 +272,74 @@ class EnemyBase {
      * Draw the enemy
      */
     draw(ctx) {
-        // Flash white when hit
-        if (this.flashTimer > 0 && this.flashTimer % 4 < 2) {
-            ctx.fillStyle = 'white';
-        } else if (this.isDead) {
-            // Fade out when dying
-            ctx.globalAlpha = 1 - (this.deathTimer / this.deathDuration);
-            ctx.fillStyle = this.color;
+        if (!this.isAlive) return;
+        
+        ctx.save();
+        
+        // Flash when invulnerable
+        if (this.invulnerable && this.invulnerabilityTime % 4 < 2) {
+            ctx.globalAlpha = 0.5;
+        }
+        
+        if (this.spriteLoaded && this.sprite) {
+            // Draw sprite
+            // Flip sprite based on direction
+            if (this.direction < 0) {
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    this.sprite,
+                    this.currentFrame * this.frameWidth, 0,
+                    this.frameWidth, this.frameHeight,
+                    -this.x - this.width, this.y,
+                    this.width, this.height
+                );
+            } else {
+                ctx.drawImage(
+                    this.sprite,
+                    this.currentFrame * this.frameWidth, 0,
+                    this.frameWidth, this.frameHeight,
+                    this.x, this.y,
+                    this.width, this.height
+                );
+            }
         } else {
-            // Normal color based on variant
-            switch(this.variant) {
-                case 'strong':
-                    ctx.fillStyle = '#FF0000';  // Bright red
-                    break;
-                case 'fast':
-                    ctx.fillStyle = '#FF6600';  // Orange
-                    break;
-                case 'armored':
-                    ctx.fillStyle = '#4B0082';  // Indigo
-                    break;
-                default:
-                    ctx.fillStyle = this.color;
+            // Fallback colored rectangle
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            // Draw eyes to show direction
+            ctx.fillStyle = 'white';
+            const eyeY = this.y + 5;
+            if (this.direction > 0) {
+                ctx.fillRect(this.x + 18, eyeY, 4, 4);
+                ctx.fillRect(this.x + 24, eyeY, 4, 4);
+            } else {
+                ctx.fillRect(this.x + 4, eyeY, 4, 4);
+                ctx.fillRect(this.x + 10, eyeY, 4, 4);
             }
         }
         
-        // Draw body
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.restore();
         
-        // Draw health bar if needed
-        if (this.showHealthBar && this.health < this.maxHealth && !this.isDead) {
-            this.drawHealthBar(ctx);
+        // Draw health bar if damaged
+        if (this.health < this.maxHealth) {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(this.x, this.y - 8, this.width, 4);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(this.x, this.y - 8, this.width * (this.health / this.maxHealth), 4);
         }
-        
-        // Reset alpha
-        if (this.isDead) {
-            ctx.globalAlpha = 1;
-        }
-        
-        // Draw facing indicator (temporary)
-        ctx.fillStyle = 'white';
-        const eyeX = this.facingRight ? 
-            this.x + this.width - 8 : 
-            this.x + 4;
-        ctx.fillRect(eyeX, this.y + 8, 4, 4);
     }
     
     /**
-     * Draw health bar above enemy
-     */
-    drawHealthBar(ctx) {
-        const barWidth = this.width;
-        const barHeight = 4;
-        const barY = this.y - 10;
-        
-        // Background
-        ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, barY, barWidth, barHeight);
-        
-        // Health
-        const healthPercent = this.health / this.maxHealth;
-        ctx.fillStyle = healthPercent > 0.5 ? 'green' : 
-                        healthPercent > 0.25 ? 'yellow' : 'red';
-        ctx.fillRect(this.x, barY, barWidth * healthPercent, barHeight);
-    }
-    
-    /**
-     * Set grounded state (called from collision detection)
+     * Set grounded state
      */
     setGrounded(grounded) {
         this.isGrounded = grounded;
+        if (grounded) {
+            this.speedY = 0;
+        }
     }
 }
 
-// Export the EnemyBase class
+// Export
 window.EnemyBase = EnemyBase;
