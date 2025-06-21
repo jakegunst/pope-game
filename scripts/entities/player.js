@@ -5,8 +5,8 @@ class Player {
         // Position and dimensions
         this.x = x;
         this.y = y;
-        this.width = 32;
-        this.height = 64;
+        this.width = 64; // double height
+        this.height = 128; // double width
         
         // Movement properties
         this.speedX = 0;  // Current horizontal velocity
