@@ -1,7 +1,7 @@
 {
-    "name": "Test Level - Enemy Combat",
+    "name": "Test Level - Enemy Combat Extended",
     "theme": "peru_village",
-    "width": 50,
+    "width": 200,
     "height": 20,
     "tileSize": 32,
     "spawn": {
@@ -11,8 +11,8 @@
     "goal": {
         "type": "reach_exit",
         "position": {
-            "x": 1500,
-            "y": 320
+            "x": 6200,
+            "y": 544
         }
     },
     "platforms": [
@@ -20,64 +20,171 @@
             "type": "solid",
             "x": 0,
             "y": 576,
-            "width": 1600,
-            "height": 32
+            "width": 6400,
+            "height": 32,
+            "comment": "Main ground platform"
         },
         {
             "type": "solid",
             "x": 300,
-            "y": 544,
+            "y": 480,
             "width": 128,
             "height": 32
         },
         {
             "type": "solid",
             "x": 500,
-            "y": 512,
+            "y": 416,
             "width": 192,
             "height": 32
         },
         {
             "type": "bouncy_platform",
             "x": 750,
-            "y": 544,
+            "y": 480,
             "width": 96,
             "height": 32
         },
         {
             "type": "solid",
             "x": 900,
-            "y": 480,
+            "y": 384,
             "width": 256,
             "height": 32
         },
         {
             "type": "oneway",
-            "x": 1000,
-            "y": 416,
+            "x": 1200,
+            "y": 320,
             "width": 128,
             "height": 16
         },
         {
             "type": "platform_r_slow",
-            "x": 1200,
-            "y": 512,
+            "x": 1400,
+            "y": 416,
             "width": 96,
             "height": 32
         },
         {
             "type": "solid",
-            "x": 1400,
-            "y": 448,
+            "x": 1600,
+            "y": 352,
             "width": 200,
             "height": 32
+        },
+        {
+            "type": "bouncy_platform",
+            "x": 1900,
+            "y": 448,
+            "width": 64,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 2100,
+            "y": 320,
+            "width": 160,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 2400,
+            "y": 416,
+            "width": 128,
+            "height": 32
+        },
+        {
+            "type": "oneway",
+            "x": 2600,
+            "y": 352,
+            "width": 96,
+            "height": 16
+        },
+        {
+            "type": "solid",
+            "x": 2800,
+            "y": 288,
+            "width": 192,
+            "height": 32
+        },
+        {
+            "type": "platform_r_slow",
+            "x": 3100,
+            "y": 384,
+            "width": 128,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 3400,
+            "y": 320,
+            "width": 256,
+            "height": 32
+        },
+        {
+            "type": "bouncy_platform",
+            "x": 3750,
+            "y": 416,
+            "width": 96,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 4000,
+            "y": 352,
+            "width": 160,
+            "height": 32
+        },
+        {
+            "type": "oneway",
+            "x": 4300,
+            "y": 288,
+            "width": 128,
+            "height": 16
+        },
+        {
+            "type": "solid",
+            "x": 4500,
+            "y": 224,
+            "width": 192,
+            "height": 32
+        },
+        {
+            "type": "platform_r_slow",
+            "x": 4800,
+            "y": 320,
+            "width": 96,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 5000,
+            "y": 384,
+            "width": 256,
+            "height": 32
+        },
+        {
+            "type": "bouncy_platform",
+            "x": 5400,
+            "y": 480,
+            "width": 128,
+            "height": 32
+        },
+        {
+            "type": "solid",
+            "x": 5700,
+            "y": 416,
+            "width": 320,
+            "height": 32,
+            "comment": "Final platform before exit"
         }
     ],
     "enemies": [
         {
             "type": "walker",
             "x": 350,
-            "y": 510,
+            "y": 446,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 100
@@ -86,7 +193,7 @@
         {
             "type": "walker",
             "x": 550,
-            "y": 478,
+            "y": 382,
             "config": {
                 "variant": "strong",
                 "aiType": "chase"
@@ -95,7 +202,7 @@
         {
             "type": "flyer",
             "x": 700,
-            "y": 300,
+            "y": 250,
             "config": {
                 "flyPattern": "sine",
                 "amplitude": 120,
@@ -106,7 +213,7 @@
         {
             "type": "walker",
             "x": 950,
-            "y": 446,
+            "y": 350,
             "config": {
                 "variant": "fast",
                 "startDirection": -1
@@ -114,8 +221,8 @@
         },
         {
             "type": "flyer",
-            "x": 1100,
-            "y": 250,
+            "x": 1300,
+            "y": 200,
             "config": {
                 "flyPattern": "dive",
                 "amplitude": 50
@@ -123,8 +230,8 @@
         },
         {
             "type": "walker",
-            "x": 1250,
-            "y": 478,
+            "x": 1450,
+            "y": 382,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 0,
@@ -132,9 +239,19 @@
             }
         },
         {
+            "type": "walker",
+            "x": 1700,
+            "y": 318,
+            "config": {
+                "variant": "strong",
+                "aiType": "chase",
+                "detectionRange": 300
+            }
+        },
+        {
             "type": "flyer",
-            "x": 1300,
-            "y": 200,
+            "x": 2000,
+            "y": 250,
             "config": {
                 "flyPattern": "hover",
                 "detectionRange": 150
@@ -142,12 +259,130 @@
         },
         {
             "type": "walker",
-            "x": 1450,
-            "y": 414,
+            "x": 2150,
+            "y": 286,
+            "config": {
+                "variant": "fast",
+                "patrolDistance": 120
+            }
+        },
+        {
+            "type": "walker",
+            "x": 2450,
+            "y": 382,
+            "config": {
+                "variant": "normal",
+                "startDirection": -1
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 2700,
+            "y": 200,
+            "config": {
+                "flyPattern": "sine",
+                "amplitude": 100
+            }
+        },
+        {
+            "type": "walker",
+            "x": 2900,
+            "y": 254,
             "config": {
                 "variant": "strong",
+                "patrolDistance": 150
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 3200,
+            "y": 250,
+            "config": {
+                "flyPattern": "dive",
+                "detectionRange": 200
+            }
+        },
+        {
+            "type": "walker",
+            "x": 3500,
+            "y": 286,
+            "config": {
+                "variant": "fast",
+                "aiType": "chase"
+            }
+        },
+        {
+            "type": "walker",
+            "x": 3800,
+            "y": 542,
+            "config": {
+                "variant": "normal",
+                "patrolDistance": 200
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 4100,
+            "y": 200,
+            "config": {
+                "flyPattern": "hover",
+                "amplitude": 80
+            }
+        },
+        {
+            "type": "walker",
+            "x": 4350,
+            "y": 542,
+            "config": {
+                "variant": "strong",
+                "startDirection": 1
+            }
+        },
+        {
+            "type": "walker",
+            "x": 4600,
+            "y": 190,
+            "config": {
+                "variant": "fast",
+                "patrolDistance": 100
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 4900,
+            "y": 150,
+            "config": {
+                "flyPattern": "sine",
+                "amplitude": 120,
+                "direction": -1
+            }
+        },
+        {
+            "type": "walker",
+            "x": 5100,
+            "y": 350,
+            "config": {
+                "variant": "normal",
                 "aiType": "chase",
-                "detectionRange": 300
+                "detectionRange": 250
+            }
+        },
+        {
+            "type": "flyer",
+            "x": 5600,
+            "y": 300,
+            "config": {
+                "flyPattern": "dive",
+                "amplitude": 100
+            }
+        },
+        {
+            "type": "walker",
+            "x": 5800,
+            "y": 382,
+            "config": {
+                "variant": "strong",
+                "patrolDistance": 150
             }
         }
     ],
@@ -170,17 +405,17 @@
         {
             "type": "tithe",
             "x": 400,
-            "y": 480
+            "y": 420
         },
         {
             "type": "tithe",
             "x": 600,
-            "y": 480
+            "y": 380
         },
         {
             "type": "beer",
             "x": 550,
-            "y": 400
+            "y": 350
         },
         {
             "type": "tithe",
@@ -190,37 +425,117 @@
         {
             "type": "leaves",
             "x": 775,
-            "y": 500
+            "y": 440
         },
         {
             "type": "tithe",
             "x": 1000,
-            "y": 450
+            "y": 350
         },
         {
             "type": "tithe",
-            "x": 1050,
-            "y": 390
+            "x": 1250,
+            "y": 290
         },
         {
             "type": "relic",
             "x": 1100,
-            "y": 300
-        },
-        {
-            "type": "tithe",
-            "x": 1300,
-            "y": 480
+            "y": 200
         },
         {
             "type": "tithe",
             "x": 1500,
-            "y": 420
+            "y": 380
+        },
+        {
+            "type": "tithe",
+            "x": 1700,
+            "y": 320
         },
         {
             "type": "beer",
-            "x": 1550,
+            "x": 1950,
             "y": 420
+        },
+        {
+            "type": "tithe",
+            "x": 2200,
+            "y": 290
+        },
+        {
+            "type": "tithe",
+            "x": 2500,
+            "y": 380
+        },
+        {
+            "type": "leaves",
+            "x": 2650,
+            "y": 320
+        },
+        {
+            "type": "tithe",
+            "x": 2900,
+            "y": 250
+        },
+        {
+            "type": "tithe",
+            "x": 3200,
+            "y": 520
+        },
+        {
+            "type": "relic",
+            "x": 3500,
+            "y": 250
+        },
+        {
+            "type": "tithe",
+            "x": 3600,
+            "y": 290
+        },
+        {
+            "type": "beer",
+            "x": 3900,
+            "y": 520
+        },
+        {
+            "type": "tithe",
+            "x": 4100,
+            "y": 320
+        },
+        {
+            "type": "tithe",
+            "x": 4400,
+            "y": 260
+        },
+        {
+            "type": "breastplate",
+            "x": 4600,
+            "y": 180
+        },
+        {
+            "type": "tithe",
+            "x": 4900,
+            "y": 290
+        },
+        {
+            "type": "tithe",
+            "x": 5100,
+            "y": 350
+        },
+        {
+            "type": "beer",
+            "x": 5300,
+            "y": 350
+        },
+        {
+            "type": "tithe",
+            "x": 5500,
+            "y": 520
+        },
+        {
+            "type": "relic",
+            "x": 5850,
+            "y": 380
         }
     ],
     "backgroundLayers": [
