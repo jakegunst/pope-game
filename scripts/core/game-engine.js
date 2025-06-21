@@ -519,9 +519,9 @@ this.renderWeather();
     if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
         const exit = this.currentLevel.goal.position;
         
-        // Calculate building position (centered on exit point)
+        // Calculate building position (centered on exit point, sitting on ground)
         const buildingX = exit.x - this.exitConfig.width/2;
-        const buildingY = exit.y - this.exitConfig.height;
+        const buildingY = exit.y - this.exitConfig.height + 32;  // Add 32 to make it sit on platform
         
         // Skip if not on screen
         if (buildingX + this.exitConfig.width < this.camera.x || 
