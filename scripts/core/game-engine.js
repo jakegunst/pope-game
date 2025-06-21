@@ -94,16 +94,16 @@ class GameEngine {
         this.exitSpriteLoaded = true;
         console.log('Pequods exit sprite loaded!');
     };
-    
-    // Pequods building configuration
+
+// Pequods building configuration (doubling in size)
 this.exitConfig = {
-    width: 128,      // Width of your sprite
-    height: 128,     // Height of your sprite
+    width: 256,      // Changed from 128 to 256
+    height: 256,     // Changed from 128 to 256
     doorBounds: {    // The actual door area
-        offsetX: 54,    // Door starts more centered
-        offsetY: 108,   // Door starts lower (closer to bottom)
-        width: 20,      // Narrower door
-        height: 20      // Shorter door
+        offsetX: 108,    // Double from 54 to 108
+        offsetY: 216,    // Double from 108 to 216
+        width: 40,       // Double from 20 to 40
+        height: 40       // Double from 20 to 40
     }
 };
     
