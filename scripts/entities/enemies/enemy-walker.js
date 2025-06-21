@@ -15,6 +15,7 @@ class EnemyWalker extends EnemyBase {
         this.edgeDetectionDistance = 10;
         this.lastGroundY = y;
         this.platformCheckDistance = 5;
+        this.vulnerabilities = ['stomp'];  // Walkers can be stomped
     }
     
     /**
