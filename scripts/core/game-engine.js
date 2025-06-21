@@ -850,6 +850,28 @@ renderDebug() {
     debugY += 15;
     this.ctx.fillText(`God Mode: ${this.debug.godMode}`, 10, debugY);
     
+    // Draw player hitbox
+if (player) {
+    this.ctx.save();
+    this.ctx.translate(-this.camera.x, -this.camera.y);
+    this.ctx.strokeStyle = 'lime';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(player.x, player.y, player.width, player.height);
+    this.ctx.restore();
+}
+
+// Draw enemy hitboxes
+if (window.enemyManager && window.enemyManager.enemies) {
+    this.ctx.save();
+    this.ctx.translate(-this.camera.x, -this.camera.y);
+    this.ctx.strokeStyle = 'orange';
+    this.ctx.lineWidth = 2;
+    window.enemyManager.enemies.forEach(enemy => {
+        this.ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    });
+    this.ctx.restore();
+}
+    
     // Draw chunk boundaries
     if (this.debug.showChunks) {
         this.ctx.save();
