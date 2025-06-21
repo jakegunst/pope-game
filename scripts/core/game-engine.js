@@ -462,9 +462,6 @@ render() {
     }
 }
 
-/**
- * Render the game world
- */
 renderGame() {
     // Fill background with sky color
     this.ctx.fillStyle = '#87CEEB';
@@ -488,34 +485,10 @@ renderGame() {
         });
     });
     
-    // Render player (always)
-    player.draw(this.ctx);
-    
-    // Render enemies
-    if (window.enemyManager) {
-        window.enemyManager.draw(this.ctx);
-    }
-    
     // Render collectibles
-this.collectiblesManager.draw(this.ctx);
-
-// Render level goal/exit BEFORE player - MOVED UP!
-if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
-    // ... all the Pequod's rendering code ...
-}
-
-// Render player AFTER exit so player appears on top
-player.draw(this.ctx);
-
-// Render enemies
-if (window.enemyManager) {
-    window.enemyManager.draw(this.ctx);
-}
-
-// Render weather effects
-this.renderWeather();
-
-    // Render level goal/exit - REPLACED WITH PEQUOD'S PIZZA
+    this.collectiblesManager.draw(this.ctx);
+    
+    // Render level goal/exit BEFORE player and enemies
     if (this.currentLevel.goal && this.currentLevel.goal.type === 'reach_exit') {
         const exit = this.currentLevel.goal.position;
         
@@ -523,64 +496,74 @@ this.renderWeather();
         const buildingX = exit.x - this.exitConfig.width/2;
         const buildingY = exit.y - this.exitConfig.height + 32;  // Add 32 to make it sit on platform
         
-        // Skip if not on screen
-        if (buildingX + this.exitConfig.width < this.camera.x || 
-            buildingX > this.camera.x + this.canvas.width ||
-            buildingY + this.exitConfig.height < this.camera.y || 
-            buildingY > this.camera.y + this.canvas.height) {
-            return;
-        }
-        
-        if (this.exitSpriteLoaded) {
-            // Draw the Pequod's Pizza sprite
-            this.ctx.drawImage(
-                this.exitSprite,
-                buildingX,
-                buildingY,
-                this.exitConfig.width,
-                this.exitConfig.height
-            );
-        } else {
-            // Fallback rendering while sprite loads
-            this.ctx.fillStyle = '#8B4513';
-            this.ctx.fillRect(buildingX, buildingY, this.exitConfig.width, this.exitConfig.height);
+        // Only render if on screen
+        if (!(buildingX + this.exitConfig.width < this.camera.x || 
+              buildingX > this.camera.x + this.canvas.width ||
+              buildingY + this.exitConfig.height < this.camera.y || 
+              buildingY > this.camera.y + this.canvas.height)) {
             
-            this.ctx.fillStyle = '#FFF';
-            this.ctx.font = '16px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText("PEQUOD'S", buildingX + this.exitConfig.width/2, buildingY + 50);
-            this.ctx.fillText("PIZZA", buildingX + this.exitConfig.width/2, buildingY + 70);
+            if (this.exitSpriteLoaded) {
+                // Draw the Pequod's Pizza sprite
+                this.ctx.drawImage(
+                    this.exitSprite,
+                    buildingX,
+                    buildingY,
+                    this.exitConfig.width,
+                    this.exitConfig.height
+                );
+            } else {
+                // Fallback rendering while sprite loads
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(buildingX, buildingY, this.exitConfig.width, this.exitConfig.height);
+                
+                this.ctx.fillStyle = '#FFF';
+                this.ctx.font = '16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText("PEQUOD'S", buildingX + this.exitConfig.width/2, buildingY + 50);
+                this.ctx.fillText("PIZZA", buildingX + this.exitConfig.width/2, buildingY + 70);
+                
+                // Draw door
+                this.ctx.fillStyle = '#654321';
+                this.ctx.fillRect(
+                    buildingX + this.exitConfig.doorBounds.offsetX,
+                    buildingY + this.exitConfig.doorBounds.offsetY,
+                    this.exitConfig.doorBounds.width,
+                    this.exitConfig.doorBounds.height
+                );
+            }
             
-            // Draw door
-            this.ctx.fillStyle = '#654321';
-            this.ctx.fillRect(
-                buildingX + this.exitConfig.doorBounds.offsetX,
-                buildingY + this.exitConfig.doorBounds.offsetY,
-                this.exitConfig.doorBounds.width,
-                this.exitConfig.doorBounds.height
-            );
-        }
-        
-        // Debug: Show door hitbox if debug mode is on
-        if (this.debug.enabled) {
-            const doorX = buildingX + this.exitConfig.doorBounds.offsetX;
-            const doorY = buildingY + this.exitConfig.doorBounds.offsetY;
-            
-            this.ctx.strokeStyle = 'lime';
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(
-                doorX, 
-                doorY, 
-                this.exitConfig.doorBounds.width, 
-                this.exitConfig.doorBounds.height
-            );
-            
-            this.ctx.fillStyle = 'lime';
-            this.ctx.font = '12px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('DOOR', doorX + this.exitConfig.doorBounds.width/2, doorY - 5);
+            // Debug: Show door hitbox if debug mode is on
+            if (this.debug.enabled) {
+                const doorX = buildingX + this.exitConfig.doorBounds.offsetX;
+                const doorY = buildingY + this.exitConfig.doorBounds.offsetY;
+                
+                this.ctx.strokeStyle = 'lime';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(
+                    doorX, 
+                    doorY, 
+                    this.exitConfig.doorBounds.width, 
+                    this.exitConfig.doorBounds.height
+                );
+                
+                this.ctx.fillStyle = 'lime';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('DOOR', doorX + this.exitConfig.doorBounds.width/2, doorY - 5);
+            }
         }
     }
+    
+    // Render player AFTER exit so player appears on top
+    player.draw(this.ctx);
+    
+    // Render enemies AFTER exit
+    if (window.enemyManager) {
+        window.enemyManager.draw(this.ctx);
+    }
+    
+    // Render weather effects
+    this.renderWeather();
 }
 
 /**
