@@ -1,12 +1,12 @@
 {
-    "name": "Test Level - Enemy Combat (Short)",
+    "name": "Test Level - Enemy Combat (Proper Spacing)",
     "theme": "peru_village",
     "width": 100,
     "height": 20,
     "tileSize": 32,
     "spawn": {
         "x": 100,
-        "y": 480
+        "y": 464
     },
     "goal": {
         "type": "reach_exit",
@@ -27,77 +27,81 @@
         {
             "type": "solid",
             "x": 300,
-            "y": 448,
+            "y": 432,
             "width": 160,
             "height": 32,
-            "comment": "First step - wider for bigger player"
+            "comment": "144px above ground (576-432=144)"
         },
         {
             "type": "solid",
             "x": 550,
-            "y": 320,
+            "y": 288,
             "width": 200,
             "height": 32,
-            "comment": "Higher platform - wider gaps"
+            "comment": "144px above previous platform"
         },
         {
             "type": "bouncy_platform",
             "x": 850,
-            "y": 448,
+            "y": 432,
             "width": 128,
-            "height": 32
+            "height": 32,
+            "comment": "144px above ground"
         },
         {
             "type": "solid",
             "x": 1100,
-            "y": 320,
+            "y": 288,
             "width": 300,
             "height": 32,
-            "comment": "Long platform for enemy patrol"
+            "comment": "144px clearance"
         },
         {
             "type": "oneway",
             "x": 1500,
-            "y": 256,
+            "y": 144,
             "width": 160,
             "height": 16,
-            "comment": "One-way platform - wider"
+            "comment": "144px above platform below"
         },
         {
             "type": "platform_r_slow",
             "x": 1750,
-            "y": 384,
+            "y": 432,
             "width": 128,
-            "height": 32
+            "height": 32,
+            "comment": "Moving platform with proper clearance"
         },
         {
             "type": "solid",
             "x": 2000,
-            "y": 320,
+            "y": 288,
             "width": 240,
-            "height": 32
+            "height": 32,
+            "comment": "144px clearance"
         },
         {
             "type": "bouncy_platform",
             "x": 2350,
-            "y": 448,
+            "y": 432,
             "width": 96,
-            "height": 32
+            "height": 32,
+            "comment": "144px above ground"
         },
         {
             "type": "solid",
             "x": 2600,
-            "y": 384,
+            "y": 288,
             "width": 400,
             "height": 32,
-            "comment": "Final platform before exit"
+            "comment": "Final platform before exit - 288px high gives plenty of room"
         }
     ],
     "enemies": [
         {
             "type": "walker",
             "x": 350,
-            "y": 414,
+            "y": 398,
             "config": {
                 "variant": "normal",
                 "patrolDistance": 100
@@ -106,7 +110,7 @@
         {
             "type": "walker",
             "x": 600,
-            "y": 286,
+            "y": 254,
             "config": {
                 "variant": "strong",
                 "aiType": "chase"
@@ -115,7 +119,7 @@
         {
             "type": "flyer",
             "x": 750,
-            "y": 200,
+            "y": 150,
             "config": {
                 "flyPattern": "sine",
                 "amplitude": 100,
@@ -125,7 +129,7 @@
         {
             "type": "walker",
             "x": 1200,
-            "y": 286,
+            "y": 254,
             "config": {
                 "variant": "fast",
                 "startDirection": -1,
@@ -135,7 +139,7 @@
         {
             "type": "flyer",
             "x": 1600,
-            "y": 150,
+            "y": 350,
             "config": {
                 "flyPattern": "dive",
                 "amplitude": 50
@@ -153,7 +157,7 @@
         {
             "type": "walker",
             "x": 2100,
-            "y": 286,
+            "y": 254,
             "config": {
                 "variant": "strong",
                 "aiType": "chase",
@@ -172,7 +176,7 @@
         {
             "type": "walker",
             "x": 2700,
-            "y": 350,
+            "y": 254,
             "config": {
                 "variant": "fast",
                 "patrolDistance": 200
@@ -193,12 +197,12 @@
         {
             "type": "tithe",
             "x": 375,
-            "y": 400
+            "y": 380
         },
         {
             "type": "beer",
             "x": 650,
-            "y": 280
+            "y": 240
         },
         {
             "type": "tithe",
@@ -208,22 +212,22 @@
         {
             "type": "leaves",
             "x": 900,
-            "y": 400
+            "y": 380
         },
         {
             "type": "tithe",
             "x": 1250,
-            "y": 280
+            "y": 240
         },
         {
             "type": "tithe",
             "x": 1580,
-            "y": 220
+            "y": 100
         },
         {
             "type": "relic",
             "x": 1250,
-            "y": 200
+            "y": 160
         },
         {
             "type": "tithe",
@@ -233,7 +237,7 @@
         {
             "type": "beer",
             "x": 2120,
-            "y": 280
+            "y": 240
         },
         {
             "type": "tithe",
@@ -243,7 +247,7 @@
         {
             "type": "breastplate",
             "x": 2800,
-            "y": 340
+            "y": 240
         },
         {
             "type": "tithe",
