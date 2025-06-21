@@ -1,230 +1,264 @@
-// enemy-walker.js - Basic walking enemy that patrols back and forth
+// enemy-walker.js - Walking enemy that patrols platforms
 
 class EnemyWalker extends EnemyBase {
     constructor(x, y, config = {}) {
-        // Set walker defaults - FASTER for red enemies! (but 25% slower than before)
-        const walkerConfig = {
-            width: 32,
-            height: 32,
-            speed: config.variant === 'fast' ? 2.25 : 1.875, // 25% slower (was 3 and 2.5)
-            health: config.variant === 'strong' ? 3 : 1,
-            damage: 10,
-            color: config.variant === 'strong' ? '#FF0000' : '#8B4513',  // Red for strong variant
-            vulnerabilities: ['projectile', 'stomp'],
-            drops: [
-                { type: 'coin', chance: 0.5 },
-                { type: 'health', chance: 0.1 }
-            ],
-            ...config  // Override with any passed config
-        };
+        // Set defaults for walker
+        config.useGravity = true;
+        config.health = config.variant === 'strong' ? 2 : 1;
+        config.speed = config.variant === 'fast' ? 2 : 1;
         
-        super(x, y, walkerConfig);
+        super(x, y, config);
         
-        // Set enemy type for drop system
-        this.type = 'walker';
-        
-        console.log(`Walker spawned at ${x}, ${y}`);
-        
-        // Walker-specific properties
-        this.walkSpeed = this.baseSpeed;
-        this.direction = config.startDirection || 1;  // 1 = right, -1 = left
-        this.turnAtEdges = config.turnAtEdges !== false;  // Turn at platform edges
-        this.turnAtWalls = config.turnAtWalls !== false;  // Turn when hitting walls
-        
-        // Patrol settings
-        this.patrolDistance = config.patrolDistance || 0;  // 0 = unlimited
-        this.startX = x;
-        
-        // Chase behavior (if AI type is 'chase')
-        this.chaseSpeed = this.walkSpeed * 1.5;
-        this.isChasing = false;
-        
-        // Jump properties - MUCH HIGHER for better gameplay!
-        this.jumpPower = config.variant === 'strong' ? -15 : -12; // Higher jumps!
-        this.jumpCooldown = 0;
-        this.maxJumpCooldown = 30; // Can jump every 0.5 seconds
-        
-        // Turn cooldown to prevent jittering
-        this.turnCooldown = 0;
-        
-        // Initialize movement
-        this.speedX = this.walkSpeed * this.direction;
+        // Walker specific properties
+        this.jumpPower = -8;
+        this.canJump = true;
+        this.edgeDetectionDistance = 10;
+        this.lastGroundY = y;
+        this.platformCheckDistance = 5;
     }
     
     /**
-     * Update AI behavior
+     * Load the walker sprite based on variant
      */
-    updateAI() {
-        // Update jump cooldown
-        if (this.jumpCooldown > 0) {
-            this.jumpCooldown--;
-        }
+    loadSprite() {
+        this.sprite = new Image();
         
-        // Update turn cooldown
-        if (this.turnCooldown > 0) {
-            this.turnCooldown--;
-        }
-        
-        switch(this.aiType) {
-            case 'pattern':
-                this.patrolPattern();
+        // Choose sprite based on variant
+        let spritePath = 'assets/images/enemies/';
+        switch(this.variant) {
+            case 'strong':
+                spritePath += 'walker-strong.png';
                 break;
-            case 'chase':
-                this.chasePattern();
+            case 'fast':
+                spritePath += 'walker-fast.png';
                 break;
             default:
-                this.patrolPattern();
+                spritePath += 'walker-normal.png';
+                break;
+        }
+        
+        this.sprite.src = spritePath;
+        this.sprite.onload = () => {
+            this.spriteLoaded = true;
+            console.log(`Walker sprite loaded: ${this.variant}`);
+        };
+        
+        // Walker sprites are 32x32 with 2 frames
+        this.frameWidth = 32;
+        this.frameHeight = 32;
+        this.frameCount = 2;
+    }
+    
+    /**
+     * Update walker-specific behavior
+     */
+    update() {
+        // Call parent update first
+        super.update();
+        
+        if (!this.isAlive) return;
+        
+        // Check platform collisions
+        this.checkPlatformCollisions();
+        
+        // Check for edges if grounded
+        if (this.isGrounded && this.turnAtEdges) {
+            this.checkForEdge();
+        }
+        
+        // Check for walls
+        this.checkForWall();
+        
+        // Update last ground position
+        if (this.isGrounded) {
+            this.lastGroundY = this.y;
+        }
+        
+        // Check if fell too far
+        if (this.y - this.lastGroundY > 300) {
+            this.takeDamage(1, this.x);
         }
     }
     
     /**
-     * Basic patrol pattern
+     * Check collisions with all platforms
      */
-    patrolPattern() {
-        // Check if we need to turn around
-        let shouldTurn = false;
+    checkPlatformCollisions() {
+        if (!window.gameEngine || !window.gameEngine.currentLevel) return;
         
-        // Turn at patrol distance limits
-        if (this.patrolDistance > 0) {
-            const distanceFromStart = Math.abs(this.x - this.startX);
-            if (distanceFromStart >= this.patrolDistance) {
-                shouldTurn = true;
+        this.isGrounded = false;
+        const platforms = window.gameEngine.currentLevel.platforms;
+        
+        for (const platform of platforms) {
+            const collision = window.collisionDetection.checkRectCollision(this, platform);
+            if (collision) {
+                this.handlePlatformCollision(platform, collision);
             }
         }
-        
-        // Check for edge detection (would fall off platform)
-        if (this.turnAtEdges && this.isGrounded) {
-            // Check if there's ground ahead
-            const checkX = this.x + (this.direction > 0 ? this.width : -5);
-            const checkY = this.y + this.height + 5;
-            
-            // This would need platform checking from enemy manager
-            // For now, we'll set a flag that enemy manager can check
-            this.needsEdgeCheck = {
-                x: checkX,
-                y: checkY
-            };
-        }
-        
-        // Random jump while patrolling (makes them more dynamic)
-        if (this.isGrounded && this.jumpCooldown <= 0 && Math.random() < 0.01) {
-            this.jump();
-        }
-        
-        // Simple movement
-        if (shouldTurn) {
-            this.turn();
-        }
-        
-        // Update speed
-        this.speedX = this.walkSpeed * this.direction;
     }
     
     /**
-     * Chase the player
+     * Handle collision with a platform
      */
-    chasePattern() {
-        const player = window.player;  // Access global player
+    handlePlatformCollision(platform, collision) {
+        const platType = window.collisionDetection.platformTypes[platform.type] || 
+                        window.collisionDetection.platformTypes.solid;
         
-        if (!player) {
-            this.patrolPattern();
+        // One-way platforms - only collide from above
+        if (platType.oneWay && this.speedY <= 0) {
             return;
         }
         
-        // Check if player is in range
-        if (this.canSeePlayer(player)) {
-            this.isChasing = true;
+        // Determine collision side
+        const fromTop = collision.overlapY < collision.overlapX && this.speedY > 0;
+        const fromBottom = collision.overlapY < collision.overlapX && this.speedY < 0;
+        const fromLeft = collision.overlapX < collision.overlapY && this.speedX > 0;
+        const fromRight = collision.overlapX < collision.overlapY && this.speedX < 0;
+        
+        if (fromTop) {
+            // Land on platform
+            this.y = platform.y - this.height;
+            this.speedY = 0;
+            this.isGrounded = true;
             
-            // Get direction to player
-            const dirToPlayer = this.getDirectionToPlayer(player);
-            
-            // Chase horizontally
-            if (Math.abs(dirToPlayer.x) > 25) {  // Larger dead zone to prevent jittering
-                this.direction = dirToPlayer.x > 0 ? 1 : -1;
-                this.speedX = this.chaseSpeed * this.direction;
-            } else {
-                this.speedX = 0;  // Stop when close
+            // Inherit platform movement
+            if (platType.dirX !== undefined) {
+                this.x += platType.dirX * platType.speed;
             }
+        } else if (fromBottom) {
+            // Hit ceiling
+            this.y = platform.y + platform.height;
+            this.speedY = 0;
+        } else if (fromLeft || fromRight) {
+            // Hit wall - turn around
+            if (fromLeft) {
+                this.x = platform.x - this.width;
+            } else {
+                this.x = platform.x + platform.width;
+            }
+            this.speedX = 0;
             
-            // Jump if player is above and we're grounded
-            if (dirToPlayer.y < -32 && this.isGrounded && Math.abs(dirToPlayer.x) < 100) {
+            // Turn around if hit a wall
+            if (this.turnCooldown === 0) {
+                this.turn();
+            }
+        }
+    }
+    
+    /**
+     * Check if approaching an edge
+     */
+    checkForEdge() {
+        if (!window.gameEngine || !window.gameEngine.currentLevel) return;
+        
+        // Look ahead in movement direction
+        const checkX = this.x + (this.direction > 0 ? 
+            this.width + this.edgeDetectionDistance : 
+            -this.edgeDetectionDistance);
+        const checkY = this.y + this.height + 5;
+        
+        // Check if there's ground ahead
+        let groundAhead = false;
+        const platforms = window.gameEngine.currentLevel.platforms;
+        
+        for (const platform of platforms) {
+            // Create a point to check
+            if (checkX >= platform.x && 
+                checkX <= platform.x + platform.width &&
+                checkY >= platform.y && 
+                checkY <= platform.y + platform.height) {
+                groundAhead = true;
+                break;
+            }
+        }
+        
+        // Turn around if no ground ahead
+        if (!groundAhead && this.turnCooldown === 0) {
+            this.turn();
+        }
+    }
+    
+    /**
+     * Check for wall collision ahead
+     */
+    checkForWall() {
+        if (!window.gameEngine || !window.gameEngine.currentLevel) return;
+        
+        const platforms = window.gameEngine.currentLevel.platforms;
+        
+        // Create a probe rectangle ahead of the walker
+        const probe = {
+            x: this.x + (this.direction > 0 ? this.width : -this.platformCheckDistance),
+            y: this.y + this.height/4, // Check middle of body
+            width: this.platformCheckDistance,
+            height: this.height/2
+        };
+        
+        for (const platform of platforms) {
+            // Skip one-way platforms
+            if (platform.type === 'oneway') continue;
+            
+            const collision = window.collisionDetection.checkRectCollision(probe, platform);
+            
+            if (collision) {
+                // Hit a wall, turn around
+                if (this.turnCooldown === 0) {
+                    this.turn();
+                }
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Override chase AI for walkers
+     */
+    chaseAI() {
+        super.chaseAI();
+        
+        // Jump if player is above and we can jump
+        if (this.state === 'chasing' && window.player) {
+            const playerAbove = window.player.y < this.y - 50;
+            const playerNear = Math.abs(window.player.x - this.x) < 100;
+            
+            if (playerAbove && playerNear && this.isGrounded && this.canJump) {
                 this.jump();
             }
-            
-            // Also jump if there's an obstacle ahead
-            if (this.isGrounded && this.jumpCooldown <= 0 && Math.abs(this.speedX) < 0.1) {
-                this.jump(); // Jump when stuck
-            }
-        } else {
-            // Lost player, return to patrol
-            if (this.isChasing) {
-                this.isChasing = false;
-                this.speedX = this.walkSpeed * this.direction;
-            }
-            this.patrolPattern();
         }
     }
     
     /**
-     * Make the enemy jump - HIGHER JUMPS!
+     * Make the walker jump
      */
     jump() {
-        if (this.isGrounded && this.jumpCooldown <= 0) {
-            this.speedY = this.jumpPower;  // Use the higher jump power
-            this.isGrounded = false;
-            this.jumpCooldown = this.maxJumpCooldown;
-        }
-    }
-    
-    /**
-     * Turn around
-     */
-    turn() {
-        // Add a small cooldown to prevent rapid turning
-        if (this.turnCooldown && this.turnCooldown > 0) {
-            return;
-        }
+        if (!this.isGrounded || !this.canJump) return;
         
-        this.direction *= -1;
-        this.speedX = this.walkSpeed * this.direction;
-        this.turnCooldown = 10; // Prevent turning again for 10 frames
-    }
-    
-    /**
-     * Handle collision with walls
-     */
-    onCollisionWithPlatform(platform, collision) {
-        super.onCollisionWithPlatform(platform, collision);
+        this.speedY = this.jumpPower;
+        this.isGrounded = false;
+        this.canJump = false;
         
-        // Turn around if we hit a wall
-        if (this.turnAtWalls && !collision.fromTop) {
-            this.turn();
-        }
+        // Reset jump ability after a delay
+        setTimeout(() => {
+            this.canJump = true;
+        }, 1000);
     }
     
     /**
-     * Called when at platform edge (by enemy manager)
+     * Override take damage to handle being stomped
      */
-    onPlatformEdge() {
-        if (this.turnAtEdges) {
-            this.turn();
-        }
-    }
-    
-    /**
-     * Override draw to show chase state
-     */
-    draw(ctx) {
-        super.draw(ctx);
+    takeDamage(amount, fromX) {
+        super.takeDamage(amount, fromX);
         
-        // Show exclamation mark when chasing
-        if (this.isChasing && !this.isDead) {
-            ctx.fillStyle = 'red';
-            ctx.font = '16px Arial';
-            ctx.fillText('!', this.x + this.width/2 - 4, this.y - 5);
+        // Extra effects for being stomped
+        if (this.health <= 0 && window.player && 
+            Math.abs(window.player.x - this.x) < this.width) {
+            // Add score for stomping
+            if (window.gameEngine) {
+                window.gameEngine.playerStats.score += 100;
+            }
         }
     }
 }
 
-// Export the EnemyWalker class
+// Export
 window.EnemyWalker = EnemyWalker;
