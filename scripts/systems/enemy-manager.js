@@ -134,6 +134,11 @@ class EnemyManager {
                 enemy.needsEdgeCheck = null;
             }
             
+            // Mark dead enemies for removal
+            if (!enemy.isAlive) {
+                enemy.shouldRemove = true;
+            }
+            
             // Remove if marked for removal
             if (enemy.shouldRemove) {
                 // Spawn collectibles when enemy dies
