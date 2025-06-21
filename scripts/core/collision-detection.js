@@ -131,11 +131,12 @@ class CollisionDetection {
                 player.x = platform.x + platform.width;
             }
             player.speedX = 0;
-            
+
+            // Removing wall slide
             // Wall slide check
-            if (!player.isGrounded) {
-                window.physics.applyWallSlide(player, true);
-            }
+            // if (!player.isGrounded) {
+            //    window.physics.applyWallSlide(player, true);
+            // }
         } else {
             // Vertical collision
             if (collision.fromTop) {
