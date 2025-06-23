@@ -1,4 +1,4 @@
-// level-loader.js - Loads and manages level data
+ // level-loader.js - Loads and manages level data
 
 class LevelLoader {
     constructor() {
@@ -67,38 +67,6 @@ class LevelLoader {
                 // Process the level
                 this.currentLevel = this.processLevel(levelData);
             }
-            
-            // Initialize level-specific features
-            this.initializeParallax(this.currentLevel.background);
-            this.initializeCheckpoints(this.currentLevel.checkpoints);
-            this.initializeWeather(this.currentLevel.weather);
-            
-            console.log(`Level loaded: ${this.currentLevel.name}`);
-            return this.currentLevel;
-            
-        } catch (error) {
-            console.error('Failed to load level:', error);
-            return null;
-        }
-    }
-    
-    /**
-     * Load a level from JSON file
-     * @param {string} levelPath - Path to the level JSON file
-     * @returns {Promise} Resolves with level data
-     */
-    async loadLevel(levelPath) {
-        try {
-            const response = await fetch(levelPath);
-            const levelData = await response.json();
-            
-            // Validate level data
-            if (!this.validateLevel(levelData)) {
-                throw new Error('Invalid level format');
-            }
-            
-            // Process the level
-            this.currentLevel = this.processLevel(levelData);
             
             // Initialize level-specific features
             this.initializeParallax(this.currentLevel.background);
