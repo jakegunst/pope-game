@@ -239,3 +239,182 @@ class MenuScreens {
         this.ctx.restore();
     }
 }
+// Add this to your menu-screens.js file
+
+class SettingsScreen {
+    constructor(menuScreens) {
+        this.menuScreens = menuScreens;
+        this.options = [
+            { 
+                name: 'Music Volume', 
+                type: 'slider', 
+                value: 1.0,
+                min: 0,
+                max: 1,
+                step: 0.1
+            },
+            { 
+                name: 'Sound Effects', 
+                type: 'slider', 
+                value: 1.0,
+                min: 0,
+                max: 1,
+                step: 0.1
+            },
+            { 
+                name: 'Mute All', 
+                type: 'toggle', 
+                value: false 
+            },
+            { 
+                name: 'Back', 
+                type: 'button' 
+            }
+        ];
+        this.selectedOption = 0;
+        
+        // Load saved settings
+        this.loadSettings();
+    }
+    
+    loadSettings() {
+        const saved = localStorage.getItem('popeGameSettings');
+        if (saved) {
+            const settings = JSON.parse(saved);
+            this.options[0].value = settings.musicVolume || 1.0;
+            this.options[1].value = settings.sfxVolume || 1.0;
+            this.options[2].value = settings.muteAll || false;
+            this.applySettings();
+        }
+    }
+    
+    saveSettings() {
+        const settings = {
+            musicVolume: this.options[0].value,
+            sfxVolume: this.options[1].value,
+            muteAll: this.options[2].value
+        };
+        localStorage.setItem('popeGameSettings', JSON.stringify(settings));
+    }
+    
+    applySettings() {
+        const musicVolume = this.options[2].value ? 0 : this.options[0].value;
+        const sfxVolume = this.options[2].value ? 0 : this.options[1].value;
+        
+        // Apply to background music
+        if (this.menuScreens.backgroundMusic) {
+            this.menuScreens.backgroundMusic.volume = musicVolume;
+        }
+        
+        // Store for game use
+        window.gameSettings = {
+            musicVolume: musicVolume,
+            sfxVolume: sfxVolume
+        };
+    }
+    
+    handleInput(e) {
+        const option = this.options[this.selectedOption];
+        
+        switch(e.key) {
+            case 'ArrowUp':
+                this.selectedOption = (this.selectedOption - 1 + this.options.length) % this.options.length;
+                break;
+                
+            case 'ArrowDown':
+                this.selectedOption = (this.selectedOption + 1) % this.options.length;
+                break;
+                
+            case 'ArrowLeft':
+                if (option.type === 'slider') {
+                    option.value = Math.max(option.min, option.value - option.step);
+                    this.applySettings();
+                    this.saveSettings();
+                }
+                break;
+                
+            case 'ArrowRight':
+                if (option.type === 'slider') {
+                    option.value = Math.min(option.max, option.value + option.step);
+                    this.applySettings();
+                    this.saveSettings();
+                }
+                break;
+                
+            case 'Enter':
+            case ' ':
+                if (option.type === 'toggle') {
+                    option.value = !option.value;
+                    this.applySettings();
+                    this.saveSettings();
+                } else if (option.name === 'Back') {
+                    this.menuScreens.returnFromSettings();
+                }
+                break;
+                
+            case 'Escape':
+                this.menuScreens.returnFromSettings();
+                break;
+        }
+    }
+    
+    render(ctx) {
+        // Background
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Title
+        ctx.fillStyle = 'white';
+        ctx.font = '48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Settings', ctx.canvas.width / 2, 100);
+        
+        // Options
+        this.options.forEach((option, index) => {
+            const y = 200 + index * 80;
+            const selected = index === this.selectedOption;
+            
+            // Highlight selected
+            if (selected) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(100, y - 35, ctx.canvas.width - 200, 70);
+            }
+            
+            // Option name
+            ctx.fillStyle = selected ? 'yellow' : 'white';
+            ctx.font = '28px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(option.name, 150, y);
+            
+            // Option value/control
+            if (option.type === 'slider') {
+                // Draw slider track
+                ctx.fillStyle = '#555';
+                ctx.fillRect(450, y - 10, 200, 20);
+                
+                // Draw slider fill
+                ctx.fillStyle = '#4a4';
+                const fillWidth = 200 * ((option.value - option.min) / (option.max - option.min));
+                ctx.fillRect(450, y - 10, fillWidth, 20);
+                
+                // Draw slider handle
+                ctx.fillStyle = 'white';
+                ctx.fillRect(448 + fillWidth, y - 15, 4, 30);
+                
+                // Show percentage
+                ctx.textAlign = 'right';
+                ctx.fillText(Math.round(option.value * 100) + '%', 700, y);
+                
+            } else if (option.type === 'toggle') {
+                ctx.textAlign = 'right';
+                ctx.fillText(option.value ? 'ON' : 'OFF', 650, y);
+            }
+        });
+        
+        // Instructions
+        ctx.fillStyle = 'gray';
+        ctx.font = '18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Use Arrow Keys to adjust, Enter to select, ESC to go back', ctx.canvas.width / 2, ctx.canvas.height - 50);
+    }
+}
