@@ -110,7 +110,7 @@ this.exitConfig = {
     // Input handling
     this.setupInputHandlers();
 }
-
+}
 /**
  * Initialize the engine and load a level
  */
