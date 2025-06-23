@@ -12,7 +12,7 @@
  "layers":[
         {
          "id":13,
-         "image":"sky.png",
+         "image":"assets/images/backgrounds/chicago/sky.png",
          "imageheight":640,
          "imagewidth":960,
          "name":"sky.png",
@@ -26,7 +26,7 @@
         }, 
         {
          "id":15,
-         "image":"skyline.png",
+         "image":"assets/images/backgrounds/chicago/skyline.png",
          "imageheight":640,
          "imagewidth":960,
          "name":"skyline.png",
@@ -40,7 +40,7 @@
         }, 
         {
          "id":11,
-         "image":"buildings.png",
+         "image":"assets/images/backgrounds/chicago/buildings.png",
          "imageheight":640,
          "imagewidth":960,
          "name":"buildings.png",
@@ -52,7 +52,7 @@
         }, 
         {
          "id":14,
-         "image":"street.png",
+         "image":"assets/images/backgrounds/chicago/street.png",
          "imageheight":640,
          "imagewidth":960,
          "name":"street.png",
@@ -605,7 +605,7 @@
         }, 
         {
          "id":12,
-         "image":"foreground.png",
+         "image":"assets/images/backgrounds/chicago/foreground.png",
          "imageheight":640,
          "imagewidth":960,
          "name":"foreground.png",
