@@ -94,7 +94,7 @@ class MenuScreens {
                 const selected = this.menuOptions[this.menuSelection];
                 if (selected.text === 'Play Game') {
                     // Load the test level and initialize game
-                    this.gameEngine.init('data/levels/test-level-enemies.json').then(success => {
+                    this.gameEngine.init('data/levels/chicago-level.json').then(success => {
                         if (success) {
                             console.log('Level loaded successfully, starting game');
                             // Game state is already set to PLAYING by init()
