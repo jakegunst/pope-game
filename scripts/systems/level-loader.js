@@ -26,6 +26,62 @@ class LevelLoader {
         this.currentCheckpoint = 0;
     }
     
+    // Add this to the beginning of your level-loader.js, after the constructor
+
+    /**
+     * Detect if level data is from Tiled
+     */
+    isTiledFormat(levelData) {
+        // Tiled levels have these specific properties
+        return levelData.layers !== undefined && 
+               levelData.tilewidth !== undefined &&
+               levelData.orientation !== undefined;
+    }
+    
+    /**
+     * Load a level from JSON file (updated to support Tiled)
+     * @param {string} levelPath - Path to the level JSON file
+     * @returns {Promise} Resolves with level data
+     */
+    async loadLevel(levelPath) {
+        try {
+            const response = await fetch(levelPath);
+            const levelData = await response.json();
+            
+            // Check if it's Tiled format
+            if (this.isTiledFormat(levelData)) {
+                console.log('Detected Tiled format, converting...');
+                
+                // Convert Tiled format to game format
+                const converter = new TiledConverter();
+                const convertedLevel = converter.convert(levelData);
+                
+                // Process as normal
+                this.currentLevel = this.processLevel(convertedLevel);
+            } else {
+                // Validate level data
+                if (!this.validateLevel(levelData)) {
+                    throw new Error('Invalid level format');
+                }
+                
+                // Process the level
+                this.currentLevel = this.processLevel(levelData);
+            }
+            
+            // Initialize level-specific features
+            this.initializeParallax(this.currentLevel.background);
+            this.initializeCheckpoints(this.currentLevel.checkpoints);
+            this.initializeWeather(this.currentLevel.weather);
+            
+            console.log(`Level loaded: ${this.currentLevel.name}`);
+            return this.currentLevel;
+            
+        } catch (error) {
+            console.error('Failed to load level:', error);
+            return null;
+        }
+    }
+    
     /**
      * Load a level from JSON file
      * @param {string} levelPath - Path to the level JSON file
