@@ -4,7 +4,7 @@
     "width": 100,
     "height": 20,
     "tileSize": 32,
-    "spawn": {
+    "playerStart": {
         "x": 100,
         "y": 464
     },
@@ -227,33 +227,40 @@
             "height": 32
         }
     ],
-    "backgroundLayers": [
-        {
-            "image": "assets/images/backgrounds/chicago/sky.png",
-            "parallaxSpeed": 0.2,
-            "yOffset": 0
-        },
-        {
-            "image": "assets/images/backgrounds/chicago/skyline.png",
-            "parallaxSpeed": 0.6,
-            "yOffset": 0
-        },
-        {
-            "image": "assets/images/backgrounds/chicago/buildings.png",
-            "parallaxSpeed": 1.0,
-            "yOffset": 0
-        },
-        {
-            "image": "assets/images/backgrounds/chicago/street.png",
-            "parallaxSpeed": 1.2,
-            "yOffset": 0
-        },
-        {
-            "image": "assets/images/backgrounds/chicago/foreground.png",
-            "parallaxSpeed": 1.6,
-            "yOffset": 0
-        }
-    ],
+    "background": {
+        "layers": [
+            {
+                "image": "assets/images/backgrounds/chicago/sky.png",
+                "speed": 0.2,
+                "offsetY": 0,
+                "repeat": true
+            },
+            {
+                "image": "assets/images/backgrounds/chicago/skyline.png",
+                "speed": 0.6,
+                "offsetY": 0,
+                "repeat": true
+            },
+            {
+                "image": "assets/images/backgrounds/chicago/buildings.png",
+                "speed": 1.0,
+                "offsetY": 0,
+                "repeat": true
+            },
+            {
+                "image": "assets/images/backgrounds/chicago/street.png",
+                "speed": 1.2,
+                "offsetY": 0,
+                "repeat": true
+            },
+            {
+                "image": "assets/images/backgrounds/chicago/foreground.png",
+                "speed": 1.6,
+                "offsetY": 0,
+                "repeat": true
+            }
+        ]
+    },
     "music": "duelOfTheFates.mp3",
     "ambientSound": "chicago_traffic.mp3"
 }
