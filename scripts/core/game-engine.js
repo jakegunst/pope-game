@@ -467,69 +467,8 @@ renderGame() {
     this.ctx.fillStyle = '#87CEEB';
     this.ctx.fillRect(this.camera.x, this.camera.y, this.canvas.width, this.canvas.height);
     
-// Add this to your game-engine.js, replacing the empty renderParallaxBackground method
-
-    /**
-     * Render parallax background layers
-     */
-    renderParallaxBackground() {
-        if (!this.levelLoader.parallaxLayers) return;
-        
-        this.levelLoader.parallaxLayers.forEach(layer => {
-            // Skip if image not loaded
-            if (!layer.img) {
-                // Try to load the image
-                layer.img = new Image();
-                layer.img.src = layer.image;
-                layer.img.onload = () => {
-                    console.log('Background loaded:', layer.image);
-                };
-                return;
-            }
-            
-            // Skip if image still loading
-            if (!layer.img.complete) return;
-            
-            // Calculate parallax offset
-            const parallaxX = this.camera.x * layer.speed;
-            const parallaxY = this.camera.y * layer.speed + layer.offsetY;
-            
-            // Save context state
-            this.ctx.save();
-            
-            // Reset transform for background (backgrounds ignore camera transform)
-            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-            
-            if (layer.repeat) {
-                // Tile the background horizontally
-                const imgWidth = layer.img.width;
-                const startX = -(parallaxX % imgWidth);
-                
-                // Draw enough copies to fill the screen
-                for (let x = startX; x < this.canvas.width; x += imgWidth) {
-                    this.ctx.drawImage(
-                        layer.img,
-                        x,
-                        -parallaxY,
-                        imgWidth,
-                        layer.img.height
-                    );
-                }
-            } else {
-                // Draw single background image
-                this.ctx.drawImage(
-                    layer.img,
-                    -parallaxX,
-                    -parallaxY,
-                    layer.img.width,
-                    layer.img.height
-                );
-            }
-            
-            // Restore context state
-            this.ctx.restore();
-        });
-    }
+    // Render parallax backgrounds
+    this.renderParallaxBackground();
     
     // Only render objects in active chunks
     this.activeChunks.forEach(chunkKey => {
@@ -947,9 +886,66 @@ if (window.enemyManager && window.enemyManager.enemies) {
     }
 }
 
-// Placeholder methods for features we'll add later
+/**
+ * Render parallax background layers
+ */
 renderParallaxBackground() {
-    // TODO: Implement parallax layers
+    if (!this.levelLoader.parallaxLayers || this.levelLoader.parallaxLayers.length === 0) return;
+    
+    this.levelLoader.parallaxLayers.forEach(layer => {
+        // Skip if image not loaded
+        if (!layer.img) {
+            // Try to load the image
+            layer.img = new Image();
+            layer.img.src = layer.image;
+            layer.img.onload = () => {
+                console.log('Background loaded:', layer.image);
+            };
+            return;
+        }
+        
+        // Skip if image still loading
+        if (!layer.img.complete) return;
+        
+        // Calculate parallax offset
+        const parallaxX = this.camera.x * layer.speed;
+        const parallaxY = this.camera.y * layer.speed + layer.offsetY;
+        
+        // Save context state
+        this.ctx.save();
+        
+        // Reset transform for background (backgrounds ignore camera transform)
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        
+        if (layer.repeat) {
+            // Tile the background horizontally
+            const imgWidth = layer.img.width;
+            const startX = -(parallaxX % imgWidth);
+            
+            // Draw enough copies to fill the screen
+            for (let x = startX; x < this.canvas.width; x += imgWidth) {
+                this.ctx.drawImage(
+                    layer.img,
+                    x,
+                    -parallaxY,
+                    imgWidth,
+                    layer.img.height
+                );
+            }
+        } else {
+            // Draw single background image
+            this.ctx.drawImage(
+                layer.img,
+                -parallaxX,
+                -parallaxY,
+                layer.img.width,
+                layer.img.height
+            );
+        }
+        
+        // Restore context state
+        this.ctx.restore();
+    });
 }
 
 renderWeather() {
