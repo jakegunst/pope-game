@@ -10,9 +10,9 @@ class MenuScreens {
         this.menuSelection = 0;
         this.menuOptions = [
             { text: 'Play Game', enabled: true },
-            { text: 'Settings', enabled: true },  // CHANGED to enabled
-            { text: 'Relics Cache', enabled: true },  // CHANGED to enabled
-            { text: 'Credits', enabled: true }   // CHANGED to enabled
+            { text: 'Settings', enabled: true },
+            { text: 'Relics Cache', enabled: true },
+            { text: 'Credits', enabled: true }
         ];
         
         // Animation timers
@@ -24,7 +24,7 @@ class MenuScreens {
         this.images = {
             titleScreen: null,
             menuScreen: null,
-            gameOverScreen: null  // ADDED for game over
+            gameOverScreen: null
         };
         
         // Audio
@@ -56,7 +56,7 @@ class MenuScreens {
             console.log('Menu screen image loaded successfully');
         };
         
-        // ADDED: Load game over screen image
+        // Load game over screen image
         const gameOverImg = new Image();
         gameOverImg.src = 'assets/images/backgrounds/game-over.png';
         gameOverImg.onload = () => {
@@ -94,9 +94,6 @@ class MenuScreens {
             case 'settings':
                 this.handleSettingsInput(e);
                 break;
-            case 'Relics Cache':
-                this.openRelicsCache();
-                break;
         }
     }
     
@@ -123,7 +120,7 @@ class MenuScreens {
                         }
                     });
                     // Music continues playing
-              } else if (selected.text === 'Settings') {
+                } else if (selected.text === 'Settings') {
                     // Open settings
                     this.openSettings();
                 } else if (selected.text === 'Relics Cache') {
@@ -134,10 +131,10 @@ class MenuScreens {
                     this.showMessage = true;
                     this.messageTimer = 180; // 3 seconds at 60fps
                 }
-                }
                 break;
         }
     }
+    
     openSettings() {
         // Create settings screen if needed
         if (!this.settingsScreen) {
@@ -151,6 +148,11 @@ class MenuScreens {
         this.gameEngine.currentState = 'settings';
     }
     
+    openRelicsCache() {
+        // TODO: Implement this method in next step
+        console.log('Opening Relics Cache screen');
+    }
+    
     returnFromSettings() {
         // Return to previous state
         this.gameEngine.currentState = this.previousState || 'menu';
@@ -162,6 +164,7 @@ class MenuScreens {
             this.settingsScreen.handleInput(e);
         }
     }
+    
     update(deltaTime) {
         // Update animations
         this.floatAnimation += deltaTime * 2;
@@ -296,7 +299,7 @@ class MenuScreens {
     }
     
     /**
-     * Render game over screen - NEW METHOD
+     * Render game over screen
      */
     renderGameOverScreen() {
         // Save context state
@@ -345,8 +348,7 @@ class MenuScreens {
     }
 }
 
-// Add this to your menu-screens.js file
-
+// Settings Screen Class
 class SettingsScreen {
     constructor(menuScreens) {
         this.menuScreens = menuScreens;
@@ -506,17 +508,16 @@ class SettingsScreen {
             if (option.type === 'slider') {
                 // Draw slider track
                 ctx.fillStyle = '#555';
-                // ctx.fillRect(450, y - 10, 200, 20);
-                ctx.fillRect(386, y - 10, 200, 20);  // was 450
+                ctx.fillRect(386, y - 10, 200, 20);
                 
                 // Draw slider fill
                 ctx.fillStyle = '#4a4';
                 const fillWidth = 200 * ((option.value - option.min) / (option.max - option.min));
-                ctx.fillRect(386, y - 10, fillWidth, 20);  // was 450
+                ctx.fillRect(386, y - 10, fillWidth, 20);
                 
                 // Draw slider handle
                 ctx.fillStyle = 'white';
-                ctx.fillRect(384 + fillWidth, y - 15, 4, 30);  // was 448
+                ctx.fillRect(384 + fillWidth, y - 15, 4, 30);
                 
                 // Show percentage
                 ctx.textAlign = 'right';
