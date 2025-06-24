@@ -233,52 +233,24 @@ class EnemyManager {
     
     /**
      * Handle collision between enemy and player
-     * FIXED: More generous stomping detection
      */
     handleEnemyPlayerCollision(enemy, player, collision) {
-        // Get collision bounds
-        const playerBottom = player.y + player.height;
-        const enemyTop = enemy.y;
-        const playerCenterX = player.x + player.width / 2;
-        const enemyCenterX = enemy.x + enemy.width / 2;
-        
-        // FIXED: Even more generous stomping detection
-        // Check if player is stomping (falling onto enemy from above)
-        const isAboveEnemy = playerBottom <= enemyTop + 30; // Very generous vertical check
-        const isAligned = Math.abs(playerCenterX - enemyCenterX) < (enemy.width + 10); // Width + 10px tolerance
-        const isFalling = player.speedY >= -2; // Can stomp even if slightly moving up
-        const canBeStopped = enemy.vulnerabilities && enemy.vulnerabilities.includes('stomp');
-        
-        if (isFalling && isAboveEnemy && isAligned && canBeStopped) {
-            console.log('STOMP SUCCESS! Player speedY:', player.speedY);
-            
+        // Check if player is stomping from above
+        if (player.speedY > 0 && player.y < enemy.y) {
             // Player stomps enemy
-            enemy.takeDamage(1, 'stomp');
-            
-            // Bounce player up (much higher bounce for better game feel)
-            player.speedY = -18;
+            enemy.takeDamage(1, player.x);
+            player.speedY = -10; // Bounce player up
             
             // Add score
             if (window.gameEngine) {
                 window.gameEngine.playerStats.score += 100;
             }
             
-            // Add a small invulnerability window to prevent double-hits
-            player.invulnerable = true;
-            player.invulnerabilityTime = 10; // Brief invulnerability
-            
-        } else if (!player.invulnerable) {
-            console.log('Enemy damages player! Not a stomp because:');
-            console.log('- isFalling:', isFalling, 'isAboveEnemy:', isAboveEnemy, 'isAligned:', isAligned);
-            
-            // Enemy hurts player
-            this.damagePlayer(enemy.damage);
-            
-            // Knockback player away from enemy
-            const knockbackDirection = playerCenterX < enemyCenterX ? -1 : 1;
-            player.speedX = knockbackDirection * 7; // Stronger knockback
-            player.speedY = -8; // Pop player up
+            return;
         }
+        
+        // Otherwise, use the enemy's own collision method
+        enemy.checkPlayerCollision();
     }
     
     /**
