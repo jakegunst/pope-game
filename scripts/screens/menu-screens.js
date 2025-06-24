@@ -11,8 +11,8 @@ class MenuScreens {
         this.menuOptions = [
             { text: 'Play Game', enabled: true },
             { text: 'Settings', enabled: true },  // CHANGED to enabled
-            { text: 'Relics Cache', enabled: false },
-            { text: 'Credits', enabled: false }
+            { text: 'Relics Cache', enabled: true },  // CHANGED to enabled
+            { text: 'Credits', enabled: true }   // CHANGED to enabled
         ];
         
         // Animation timers
