@@ -499,16 +499,17 @@ class SettingsScreen {
             if (option.type === 'slider') {
                 // Draw slider track
                 ctx.fillStyle = '#555';
-                ctx.fillRect(450, y - 10, 200, 20);
+                // ctx.fillRect(450, y - 10, 200, 20);
+                ctx.fillRect(386, y - 10, 200, 20);  // was 450
                 
                 // Draw slider fill
                 ctx.fillStyle = '#4a4';
                 const fillWidth = 200 * ((option.value - option.min) / (option.max - option.min));
-                ctx.fillRect(450, y - 10, fillWidth, 20);
+                ctx.fillRect(386, y - 10, fillWidth, 20);  // was 450
                 
                 // Draw slider handle
                 ctx.fillStyle = 'white';
-                ctx.fillRect(448 + fillWidth, y - 15, 4, 30);
+                ctx.fillRect(384 + fillWidth, y - 15, 4, 30);  // was 448
                 
                 // Show percentage
                 ctx.textAlign = 'right';
