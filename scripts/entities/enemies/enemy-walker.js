@@ -7,7 +7,7 @@ class EnemyWalker extends EnemyBase {
             ...config,
             speed: config.speed || 1,
             health: config.health || 1,
-            damage: config.damage || 25,  // CHANGED: Default 25% damage for normal walkers
+            damage: config.damage || 25,  // Default 25% damage for normal walkers
             useGravity: true,
             turnAtEdges: config.turnAtEdges !== false
         };
@@ -15,11 +15,11 @@ class EnemyWalker extends EnemyBase {
         // Variant-specific adjustments
         if (config.variant === 'strong') {
             walkerConfig.health = 3;
-            walkerConfig.damage = 50;  // CHANGED: 50% damage for strong walkers
+            walkerConfig.damage = 50;  // 50% damage for strong walkers
             walkerConfig.speed = 0.5;  // Slower but tankier
         } else if (config.variant === 'fast') {
             walkerConfig.speed = 2;
-            walkerConfig.damage = 50;  // CHANGED: 50% damage for fast walkers
+            walkerConfig.damage = 50;  // 50% damage for fast walkers
             walkerConfig.health = 1;
         }
         
@@ -32,26 +32,17 @@ class EnemyWalker extends EnemyBase {
     }
     
     /**
-     * Load walker sprite based on variant
+     * Get sprite row based on variant
+     * Row 0: Green (normal)
+     * Row 1: Blue (fast)
+     * Row 2: Red (strong)
      */
-    loadSprite() {
-        this.sprite = new Image();
-        
+    getSpriteRow() {
         switch(this.variant) {
-            case 'strong':
-                this.sprite.src = 'assets/images/enemies/walker-strong.png';
-                break;
-            case 'fast':
-                this.sprite.src = 'assets/images/enemies/walker-fast.png';
-                break;
-            default:
-                this.sprite.src = 'assets/images/enemies/walker-normal.png';
+            case 'fast': return 1;    // Blue sprites
+            case 'strong': return 2;  // Red sprites
+            default: return 0;        // Green sprites
         }
-        
-        this.sprite.onload = () => {
-            this.spriteLoaded = true;
-            console.log(`Walker sprite loaded: ${this.variant}`);
-        };
     }
     
     /**
