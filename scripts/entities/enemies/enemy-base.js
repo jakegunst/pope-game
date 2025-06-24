@@ -48,24 +48,47 @@ class EnemyBase {
         this.vulnerabilities = ['stomp', 'projectile'];  // What can hurt this enemy
         
         // Sprite setup
-        this.sprite = null;
+        this.spriteSheet = null;
         this.spriteLoaded = false;
         this.currentFrame = 0;
         this.animationTimer = 0;
         this.animationSpeed = 0.1;
-        this.frameCount = 2; // Most enemies have 2 frames
-        this.frameWidth = 32;
-        this.frameHeight = 32;
+        this.frameCount = 3; // 3 frames per enemy type in the sprite sheet
+        this.spriteSize = 16; // Each sprite is 16x16 in the sheet
         
-        // Load sprite based on enemy type and variant
-        this.loadSprite();
+        // Load the shared sprite sheet
+        this.loadSpriteSheet();
     }
     
     /**
-     * Load the appropriate sprite for this enemy
+     * Load the shared enemy sprite sheet
      */
-    loadSprite() {
-        // This will be overridden by subclasses
+    loadSpriteSheet() {
+        if (!window.enemySpriteSheet) {
+            window.enemySpriteSheet = new Image();
+            window.enemySpriteSheet.src = 'assets/images/enemies/enemies.png';
+            window.enemySpriteSheet.onload = () => {
+                console.log('Enemy sprite sheet loaded');
+            };
+        }
+        this.spriteSheet = window.enemySpriteSheet;
+        
+        // Check if already loaded
+        if (this.spriteSheet.complete && this.spriteSheet.naturalHeight !== 0) {
+            this.spriteLoaded = true;
+        } else {
+            this.spriteSheet.addEventListener('load', () => {
+                this.spriteLoaded = true;
+            });
+        }
+    }
+    
+    /**
+     * Get sprite sheet row based on enemy type and variant
+     * Override this in subclasses
+     */
+    getSpriteRow() {
+        return 0; // Default to first row
     }
     
     /**
@@ -73,9 +96,9 @@ class EnemyBase {
      */
     getColorForVariant() {
         switch(this.variant) {
-            case 'strong': return '#4169E1'; // Blue
-            case 'fast': return '#FF4500';   // Red
-            default: return '#32CD32';       // Green
+            case 'strong': return '#FF0000';   // Red
+            case 'fast': return '#0000FF';     // Blue
+            default: return '#00FF00';         // Green
         }
     }
     
@@ -261,7 +284,7 @@ class EnemyBase {
             
             // Otherwise damage player
             if (!window.player.invulnerable) {
-                window.gameEngine.playerStats.health -= this.damage;  // CHANGED: Now uses direct percentage
+                window.gameEngine.playerStats.health -= this.damage;
                 window.player.invulnerable = true;
                 window.player.invulnerabilityTime = 60;
                 
@@ -291,23 +314,27 @@ class EnemyBase {
             ctx.globalAlpha = 0.5;
         }
         
-        if (this.spriteLoaded && this.sprite) {
-            // Draw sprite
+        if (this.spriteLoaded && this.spriteSheet) {
+            // Get sprite position from sheet
+            const row = this.getSpriteRow();
+            const sourceX = this.currentFrame * this.spriteSize;
+            const sourceY = row * this.spriteSize;
+            
             // Flip sprite based on direction
             if (this.direction < 0) {
                 ctx.scale(-1, 1);
                 ctx.drawImage(
-                    this.sprite,
-                    this.currentFrame * this.frameWidth, 0,
-                    this.frameWidth, this.frameHeight,
+                    this.spriteSheet,
+                    sourceX, sourceY,
+                    this.spriteSize, this.spriteSize,
                     -this.x - this.width, this.y,
                     this.width, this.height
                 );
             } else {
                 ctx.drawImage(
-                    this.sprite,
-                    this.currentFrame * this.frameWidth, 0,
-                    this.frameWidth, this.frameHeight,
+                    this.spriteSheet,
+                    sourceX, sourceY,
+                    this.spriteSize, this.spriteSize,
                     this.x, this.y,
                     this.width, this.height
                 );
