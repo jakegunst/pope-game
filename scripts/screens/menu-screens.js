@@ -244,6 +244,11 @@ class MenuScreens {
 class SettingsScreen {
     constructor(menuScreens) {
         this.menuScreens = menuScreens;
+        
+        // Load background image
+        this.backgroundImage = new Image();
+        this.backgroundImage.src = 'assets/images/backgrounds/settings.png';
+        
         this.options = [
             { 
                 name: 'Music Volume', 
@@ -359,9 +364,14 @@ class SettingsScreen {
     }
     
     render(ctx) {
-        // Background
-        ctx.fillStyle = '#2a2a2a';
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        // Background image
+        if (this.backgroundImage && this.backgroundImage.complete) {
+            ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        } else {
+            // Fallback color
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
         
         // Title
         ctx.fillStyle = 'white';
