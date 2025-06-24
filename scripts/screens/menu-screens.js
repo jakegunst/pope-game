@@ -23,7 +23,8 @@ class MenuScreens {
         // Images
         this.images = {
             titleScreen: null,
-            menuScreen: null
+            menuScreen: null,
+            gameOverScreen: null  // ADDED for game over
         };
         
         // Audio
@@ -49,6 +50,14 @@ class MenuScreens {
         menuImg.onload = () => {
             this.images.menuScreen = menuImg;
             console.log('Menu screen image loaded successfully');
+        };
+        
+        // ADDED: Load game over screen image
+        const gameOverImg = new Image();
+        gameOverImg.src = 'assets/images/backgrounds/game-over.png';
+        gameOverImg.onload = () => {
+            this.images.gameOverScreen = gameOverImg;
+            console.log('Game over screen image loaded successfully');
         };
         
         // Load menu music
@@ -238,7 +247,57 @@ class MenuScreens {
         // Restore context state
         this.ctx.restore();
     }
+    
+    /**
+     * Render game over screen - NEW METHOD
+     */
+    renderGameOverScreen() {
+        // Save context state
+        this.ctx.save();
+        
+        // Clear canvas
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        if (this.images.gameOverScreen && this.images.gameOverScreen.complete) {
+            // Draw the game over background image
+            this.ctx.drawImage(this.images.gameOverScreen, 0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            // Fallback dark gradient
+            const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(0.5, '#2a0000');
+            gradient.addColorStop(1, '#000000');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+        
+        // Draw "GAME OVER" text
+        this.ctx.fillStyle = '#FF0000';
+        this.ctx.font = 'bold 72px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.shadowColor = 'black';
+        this.ctx.shadowBlur = 10;
+        this.ctx.fillText('GAME OVER', this.canvas.width/2, this.canvas.height/2 - 50);
+        
+        // Draw options
+        this.ctx.shadowBlur = 0;
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Press R to restart level', this.canvas.width/2, this.canvas.height/2 + 50);
+        this.ctx.fillText('Press ESC to return to menu', this.canvas.width/2, this.canvas.height/2 + 90);
+        
+        // Draw final stats
+        this.ctx.font = '18px Arial';
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.fillText(`Final Score: ${this.gameEngine.playerStats.score}`, this.canvas.width/2, this.canvas.height/2 + 150);
+        this.ctx.fillText(`Tithes Collected: ${this.gameEngine.playerStats.coins}`, this.canvas.width/2, this.canvas.height/2 + 180);
+        
+        // Restore context
+        this.ctx.restore();
+    }
 }
+
 // Add this to your menu-screens.js file
 
 class SettingsScreen {
