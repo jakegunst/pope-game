@@ -42,6 +42,11 @@ class EnemyBase {
         // Visual
         this.color = this.getColorForVariant();
         
+        // Collision settings
+        this.collideWithPlatforms = true;
+        this.affectedByGravity = this.useGravity;
+        this.vulnerabilities = ['stomp', 'projectile'];  // What can hurt this enemy
+        
         // Sprite setup
         this.sprite = null;
         this.spriteLoaded = false;
@@ -343,6 +348,24 @@ class EnemyBase {
         if (grounded) {
             this.speedY = 0;
         }
+    }
+    
+    /**
+     * Handle collision with platform
+     */
+    onCollisionWithPlatform(platform, collision) {
+        // Use the same collision resolution as the player
+        if (!window.collisionDetection) return;
+        
+        window.collisionDetection.handlePlatformCollision(this, platform, collision);
+    }
+    
+    /**
+     * Called when enemy reaches platform edge
+     */
+    onPlatformEdge() {
+        // Turn around by default
+        this.turn();
     }
 }
 
