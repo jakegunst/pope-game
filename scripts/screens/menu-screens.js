@@ -602,9 +602,6 @@ class RelicsCacheScreen {
         // Load background image
         this.backgroundImage = new Image();
         this.backgroundImage.src = 'assets/images/backgrounds/relics.png';
-        
-        // Simple back button
-        this.backButton = { text: 'Back', x: 100, y: 500, width: 100, height: 40 };
     }
     
     handleInput(e) {
@@ -627,15 +624,6 @@ class RelicsCacheScreen {
         if (this.backgroundImage && this.backgroundImage.complete) {
             ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
         }
-        
-        // Draw back button
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(this.backButton.x, this.backButton.y, this.backButton.width, this.backButton.height);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = '24px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.backButton.text, this.backButton.x + this.backButton.width/2, this.backButton.y + 28);
         
         // Instructions
         ctx.fillStyle = 'white';
@@ -664,7 +652,7 @@ class CreditsScreen {
             case ' ':
             case 'Escape':
                 // Go back to menu
-                this.menuScreens.gameEngine.currentState = 'menu';
+            this.menuScreens.gameEngine.currentState = 'menu';
                 break;
         }
     }
@@ -678,15 +666,6 @@ class CreditsScreen {
         if (this.backgroundImage && this.backgroundImage.complete) {
             ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
         }
-        
-        // Draw back button
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(this.backButton.x, this.backButton.y, this.backButton.width, this.backButton.height);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = '24px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.backButton.text, this.backButton.x + this.backButton.width/2, this.backButton.y + 28);
         
         // Instructions
         ctx.fillStyle = 'white';
