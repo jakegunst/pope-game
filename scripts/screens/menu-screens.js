@@ -10,7 +10,7 @@ class MenuScreens {
         this.menuSelection = 0;
         this.menuOptions = [
             { text: 'Play Game', enabled: true },
-            { text: 'Settings', enabled: false },
+            { text: 'Settings', enabled: true },  // CHANGED to enabled
             { text: 'Relics Cache', enabled: false },
             { text: 'Credits', enabled: false }
         ];
@@ -30,6 +30,10 @@ class MenuScreens {
         // Audio
         this.menuMusic = null;
         this.musicStarted = false;
+        
+        // Settings screen instance
+        this.settingsScreen = null;
+        this.previousState = null;  // Track where we came from
         
         // Load assets
         this.loadAssets();
@@ -86,6 +90,10 @@ class MenuScreens {
             case 'menu':
                 this.handleMenuInput(e);
                 break;
+                
+            case 'settings':
+                this.handleSettingsInput(e);
+                break;
         }
     }
     
@@ -112,6 +120,9 @@ class MenuScreens {
                         }
                     });
                     // Music continues playing
+                } else if (selected.text === 'Settings') {
+                    // Open settings
+                    this.openSettings();
                 } else {
                     // Show "coming soon" message for disabled options
                     this.showMessage = true;
@@ -143,6 +154,12 @@ class MenuScreens {
                 
             case 'menu':
                 this.renderMainMenu();
+                break;
+                
+            case 'settings':
+                if (this.settingsScreen) {
+                    this.settingsScreen.render(this.ctx);
+                }
                 break;
         }
     }
@@ -365,9 +382,9 @@ class SettingsScreen {
         const musicVolume = this.options[2].value ? 0 : this.options[0].value;
         const sfxVolume = this.options[2].value ? 0 : this.options[1].value;
         
-        // Apply to background music
-        if (this.menuScreens.backgroundMusic) {
-            this.menuScreens.backgroundMusic.volume = musicVolume;
+        // Apply to menu music
+        if (this.menuScreens.menuMusic) {
+            this.menuScreens.menuMusic.volume = musicVolume;
         }
         
         // Store for game use
