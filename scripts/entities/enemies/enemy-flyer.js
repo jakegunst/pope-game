@@ -1,210 +1,233 @@
-// enemy-flyer.js - Flying enemy with various patterns
+// enemy-flyer.js - Flying enemy that hovers and swoops
 
 class EnemyFlyer extends EnemyBase {
     constructor(x, y, config = {}) {
-        // Set defaults for flyer
-        config.useGravity = false;
-        config.health = 2;
-        config.speed = config.speed || 1.5;
+        // Set flyer-specific defaults
+        const flyerConfig = {
+            ...config,
+            speed: config.speed || 1.5,
+            health: config.health || 1,
+            damage: config.damage || 25,  // CHANGED: Default 25% damage for flyers
+            useGravity: false,  // Flyers don't fall
+            turnAtEdges: false   // Flyers don't need edge detection
+        };
         
-        super(x, y, config);
+        super(x, y, flyerConfig);
         
-        // Flyer specific properties
-        this.width = 40;
-        this.height = 30;
-        this.baseY = y;
-        this.flyPattern = config.flyPattern || 'sine';
-        this.amplitude = config.amplitude || 100;
-        this.frequency = 0.02;
-        this.patternTimer = 0;
-        this.diveSpeed = 5;
-        this.vulnerabilities = ['stomp'];  // Flying enemies can be stomped
+        // Flying-specific properties
+        this.baseY = y;  // Remember starting height
+        this.hoverAmplitude = 30;  // How much to bob up and down
+        this.hoverSpeed = 0.05;
+        this.hoverOffset = Math.random() * Math.PI * 2;  // Random starting phase
+        this.swoopSpeed = 4;
+        this.isSwooping = false;
+        this.swoopCooldown = 0;
+        this.visionRange = 200;
         
-        // Override frame settings for condor
-        this.frameWidth = 40;
-        this.frameHeight = 30;
-        this.frameCount = 1; // Condor only has 1 frame
+        // Different flight patterns
+        this.flightPattern = config.flightPattern || 'hover';  // hover, circle, patrol
+        this.circleRadius = 50;
+        this.circleAngle = 0;
     }
     
     /**
-     * Load the flyer sprite (condor)
+     * Load flyer sprite
      */
     loadSprite() {
         this.sprite = new Image();
         this.sprite.src = 'assets/images/enemies/flyer-normal.png';
+        
         this.sprite.onload = () => {
             this.spriteLoaded = true;
-            console.log('Flyer (condor) sprite loaded');
+            console.log('Flyer sprite loaded');
         };
     }
     
     /**
-     * Get color for flyer variant (fallback)
-     */
-    getColorForVariant() {
-        return '#8B4513'; // Brown for bird
-    }
-    
-    /**
-     * Update flyer-specific behavior
-     */
-    update() {
-        if (!this.isAlive) return;
-        
-        // Update invulnerability
-        if (this.invulnerabilityTime > 0) {
-            this.invulnerabilityTime--;
-            this.invulnerable = this.invulnerabilityTime > 0;
-        }
-        
-        // Update pattern timer
-        this.patternTimer += this.frequency;
-        
-        // Update AI (flying patterns)
-        this.updateAI();
-        
-        // Update position
-        this.x += this.speedX;
-        this.y += this.speedY;
-        
-        // No animation update needed (single frame)
-        
-        // Check if out of bounds
-        if (this.y > 1000 || this.y < -200) {
-            this.isAlive = false;
-        }
-    }
-    
-    /**
-     * Override AI for flying patterns
+     * Update AI behavior specific to flyers
      */
     updateAI() {
-        switch(this.flyPattern) {
-            case 'sine':
-                this.sinePattern();
-                break;
-            case 'dive':
-                this.divePattern();
-                break;
-            case 'hover':
-                this.hoverPattern();
-                break;
-            case 'circle':
-                this.circlePattern();
-                break;
-            default:
-                this.sinePattern();
+        // Update swoop cooldown
+        if (this.swoopCooldown > 0) {
+            this.swoopCooldown--;
         }
-    }
-    
-    /**
-     * Sine wave pattern
-     */
-    sinePattern() {
-        // Horizontal movement
-        this.speedX = this.baseSpeed * this.direction;
         
-        // Vertical sine wave
-        this.y = this.baseY + Math.sin(this.patternTimer) * this.amplitude;
+        // Check for player to swoop at
+        if (window.player && !this.isSwooping && this.swoopCooldown === 0) {
+            const dx = window.player.x - this.x;
+            const dy = window.player.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < this.visionRange && dy > -50) {  // Player is below or slightly above
+                this.startSwoop();
+            }
+        }
         
-        // Turn around at patrol boundaries
-        if (this.patrolDistance > 0) {
-            const distanceFromStart = Math.abs(this.x - this.startX);
-            if (distanceFromStart > this.patrolDistance) {
-                this.direction *= -1;
+        if (this.isSwooping) {
+            this.swoopAI();
+        } else {
+            // Normal flight pattern
+            switch (this.flightPattern) {
+                case 'circle':
+                    this.circleAI();
+                    break;
+                case 'patrol':
+                    this.patrolAI();
+                    break;
+                default:
+                    this.hoverAI();
             }
         }
     }
     
     /**
-     * Dive attack pattern
+     * Hovering flight pattern
      */
-    divePattern() {
-        if (!window.player) {
-            this.hoverPattern();
-            return;
-        }
+    hoverAI() {
+        // Gentle horizontal movement
+        this.speedX = Math.sin(this.hoverOffset) * 0.5;
         
+        // Bob up and down
+        const targetY = this.baseY + Math.sin(this.hoverOffset) * this.hoverAmplitude;
+        this.speedY = (targetY - this.y) * 0.1;
+        
+        this.hoverOffset += this.hoverSpeed;
+    }
+    
+    /**
+     * Circular flight pattern
+     */
+    circleAI() {
+        this.circleAngle += 0.02;
+        
+        const targetX = this.startX + Math.cos(this.circleAngle) * this.circleRadius;
+        const targetY = this.baseY + Math.sin(this.circleAngle) * this.circleRadius;
+        
+        this.speedX = (targetX - this.x) * 0.1;
+        this.speedY = (targetY - this.y) * 0.1;
+        
+        // Face direction of movement
+        this.direction = this.speedX > 0 ? 1 : -1;
+    }
+    
+    /**
+     * Start swooping at player
+     */
+    startSwoop() {
+        this.isSwooping = true;
+        this.state = 'swooping';
+        
+        // Calculate swoop direction
         const dx = window.player.x - this.x;
         const dy = window.player.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (this.state === 'diving') {
-            // Continue dive
-            this.speedY = this.diveSpeed;
+        this.speedX = (dx / distance) * this.swoopSpeed;
+        this.speedY = (dy / distance) * this.swoopSpeed;
+        
+        this.direction = dx > 0 ? 1 : -1;
+    }
+    
+    /**
+     * Swooping behavior
+     */
+    swoopAI() {
+        // Continue in swoop direction
+        // Gradually return to normal height
+        if (this.y > this.baseY + this.hoverAmplitude * 2 || 
+            this.y < this.baseY - this.hoverAmplitude * 2) {
+            this.endSwoop();
+        }
+        
+        // End swoop if hit platform
+        if (this.speedY > 0 && this.y > this.baseY) {
+            this.endSwoop();
+        }
+    }
+    
+    /**
+     * End swoop and return to normal pattern
+     */
+    endSwoop() {
+        this.isSwooping = false;
+        this.state = 'idle';
+        this.swoopCooldown = 180;  // 3 seconds at 60fps
+        
+        // Slow down
+        this.speedX *= 0.5;
+        this.speedY *= 0.5;
+    }
+    
+    /**
+     * Override draw to add wing flapping animation
+     */
+    draw(ctx) {
+        if (!this.isAlive) return;
+        
+        ctx.save();
+        
+        // Flash when invulnerable
+        if (this.invulnerable && this.invulnerabilityTime % 4 < 2) {
+            ctx.globalAlpha = 0.5;
+        }
+        
+        if (this.spriteLoaded && this.sprite) {
+            // Flyer sprites might have multiple frames for wing positions
+            const frameCount = 2;
+            const currentFrame = Math.floor(this.animationTimer * 10) % frameCount;
             
-            // Pull up when close to ground
-            if (this.y > this.baseY + this.amplitude || dy < -50) {
-                this.state = 'recovering';
-                this.speedY = -this.diveSpeed / 2;
+            // Draw sprite with animation
+            if (this.direction < 0) {
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    this.sprite,
+                    currentFrame * this.frameWidth, 0,
+                    this.frameWidth, this.frameHeight,
+                    -this.x - this.width, this.y,
+                    this.width, this.height
+                );
+            } else {
+                ctx.drawImage(
+                    this.sprite,
+                    currentFrame * this.frameWidth, 0,
+                    this.frameWidth, this.frameHeight,
+                    this.x, this.y,
+                    this.width, this.height
+                );
             }
-        } else if (this.state === 'recovering') {
-            // Return to base height
-            if (this.y < this.baseY) {
-                this.y = this.baseY;
-                this.speedY = 0;
-                this.state = 'hovering';
-            }
+            
+            this.animationTimer += 0.016;  // Assuming 60fps
         } else {
-            // Hover and watch for player
-            this.hoverPattern();
+            // Fallback: Draw as flying creature
+            ctx.fillStyle = this.isSwooping ? '#FF0000' : this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
             
-            // Start dive if player is below and in range
-            if (distance < this.detectionRange && dy > 50 && Math.abs(dx) < 100) {
-                this.state = 'diving';
-                this.direction = dx > 0 ? 1 : -1;
+            // Draw wings
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            const wingOffset = Math.sin(this.hoverOffset * 4) * 5;
+            ctx.fillRect(this.x - 5, this.y + 5 + wingOffset, 5, 15);
+            ctx.fillRect(this.x + this.width, this.y + 5 - wingOffset, 5, 15);
+            
+            // Draw eyes
+            ctx.fillStyle = 'white';
+            const eyeY = this.y + 8;
+            if (this.direction > 0) {
+                ctx.fillRect(this.x + 18, eyeY, 3, 3);
+                ctx.fillRect(this.x + 23, eyeY, 3, 3);
+            } else {
+                ctx.fillRect(this.x + 6, eyeY, 3, 3);
+                ctx.fillRect(this.x + 11, eyeY, 3, 3);
             }
         }
-    }
-    
-    /**
-     * Hover in place pattern
-     */
-    hoverPattern() {
-        // Small circular motion
-        this.x = this.startX + Math.cos(this.patternTimer * 2) * 20;
-        this.y = this.baseY + Math.sin(this.patternTimer * 2) * 10;
         
-        // Face player if nearby
-        if (window.player) {
-            const dx = window.player.x - this.x;
-            if (Math.abs(dx) < this.detectionRange) {
-                this.direction = dx > 0 ? 1 : -1;
-            }
-        }
-    }
-    
-    /**
-     * Circular pattern
-     */
-    circlePattern() {
-        const radius = this.amplitude;
-        this.x = this.startX + Math.cos(this.patternTimer) * radius;
-        this.y = this.baseY + Math.sin(this.patternTimer) * radius;
+        ctx.restore();
         
-        // Face direction of movement
-        this.direction = Math.cos(this.patternTimer + Math.PI/2) > 0 ? 1 : -1;
-    }
-    
-    /**
-     * Override collision to prevent stomping
-     */
-    checkPlayerCollision() {
-        if (!window.player || !this.isAlive) return;
-        
-        const collision = window.collisionDetection.checkRectCollision(this, window.player);
-        if (collision) {
-            // Always damage player (can't stomp flyers)
-            if (!window.player.invulnerable) {
-                window.gameEngine.playerStats.health -= this.damage * 10;
-                window.player.invulnerable = true;
-                window.player.invulnerabilityTime = 60;
-                
-                // Knockback player
-                const knockbackDir = window.player.x < this.x ? -1 : 1;
-                window.player.speedX = knockbackDir * 8;
-                window.player.speedY = -5;
-            }
+        // Draw health bar if damaged
+        if (this.health < this.maxHealth) {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(this.x, this.y - 8, this.width, 4);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(this.x, this.y - 8, this.width * (this.health / this.maxHealth), 4);
         }
     }
 }
