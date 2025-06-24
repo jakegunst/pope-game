@@ -478,7 +478,8 @@ class GameEngine {
         
         // Render menu screens first (no camera transform needed)
         if ((this.currentState === this.states.START_SCREEN || 
-             this.currentState === this.states.MENU) && this.menuScreens) {
+             this.currentState === this.states.MENU ||
+             this.currentState === this.states.SETTINGS) && this.menuScreens) {
             this.menuScreens.render();
             return;
         }
