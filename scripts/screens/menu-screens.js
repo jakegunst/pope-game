@@ -149,9 +149,17 @@ class MenuScreens {
     }
     
     openRelicsCache() {
-        // TODO: Implement this method in next step
-        console.log('Opening Relics Cache screen');
+    // Create relics cache screen if needed
+    if (!this.relicsCacheScreen) {
+        this.relicsCacheScreen = new RelicsCacheScreen(this);
     }
+    
+    // Store where we came from
+    this.previousState = this.gameEngine.currentState;
+    
+    // Change state to relics cache
+    this.gameEngine.currentState = 'relics_cache';
+}
     
     returnFromSettings() {
         // Return to previous state
