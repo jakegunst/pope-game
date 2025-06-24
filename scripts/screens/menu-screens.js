@@ -98,6 +98,10 @@ class MenuScreens {
             case 'relics_cache':
                 this.handleRelicsCacheInput(e);
                 break;
+                
+            case 'credits':
+                this.handleCreditsInput(e);
+                break;
         }
     }
     
@@ -156,30 +160,31 @@ class MenuScreens {
     }
     
     openRelicsCache() {
-    // Create relics cache screen if needed
-    if (!this.relicsCacheScreen) {
-        this.relicsCacheScreen = new RelicsCacheScreen(this);
+        // Create relics cache screen if needed
+        if (!this.relicsCacheScreen) {
+            this.relicsCacheScreen = new RelicsCacheScreen(this);
+        }
+        
+        // Store where we came from
+        this.previousState = this.gameEngine.currentState;
+        
+        // Change state to relics cache
+        this.gameEngine.currentState = 'relics_cache';
+        console.log('Changed state to:', this.gameEngine.currentState);
     }
     
-    // Store where we came from
-    this.previousState = this.gameEngine.currentState;
-    
-    // Change state to relics cache
-    this.gameEngine.currentState = 'relics_cache';
-}
-    
-openCredits() {
-    // Create credits screen if needed
-    if (!this.creditsScreen) {
-        this.creditsScreen = new CreditsScreen(this);
+    openCredits() {
+        // Create credits screen if needed
+        if (!this.creditsScreen) {
+            this.creditsScreen = new CreditsScreen(this);
+        }
+        
+        // Store where we came from
+        this.previousState = this.gameEngine.currentState;
+        
+        // Change state to credits
+        this.gameEngine.currentState = 'credits';
     }
-    
-    // Store where we came from
-    this.previousState = this.gameEngine.currentState;
-    
-    // Change state to credits
-    this.gameEngine.currentState = 'credits';
-}
 
     returnFromSettings() {
         // Return to previous state
@@ -198,11 +203,13 @@ openCredits() {
             this.relicsCacheScreen.handleInput(e);
         }
     }
+    
     handleCreditsInput(e) {
         if (this.creditsScreen) {
             this.creditsScreen.handleInput(e);
         }
     }
+    
     update(deltaTime) {
         // Update animations
         this.floatAnimation += deltaTime * 2;
@@ -232,11 +239,13 @@ openCredits() {
                     this.settingsScreen.render(this.ctx);
                 }
                 break;
+                
             case 'relics_cache':
                 if (this.relicsCacheScreen) {
                     this.relicsCacheScreen.render(this.ctx);
                 }
                 break;
+                
             case 'credits':
                 if (this.creditsScreen) {
                     this.creditsScreen.render(this.ctx);
@@ -584,6 +593,7 @@ class SettingsScreen {
         ctx.fillText('Use Arrow Keys to adjust, Enter to select, ESC to go back', ctx.canvas.width / 2, ctx.canvas.height - 50);
     }
 }
+
 // Relics Cache Screen Class
 class RelicsCacheScreen {
     constructor(menuScreens) {
@@ -592,6 +602,57 @@ class RelicsCacheScreen {
         // Load background image
         this.backgroundImage = new Image();
         this.backgroundImage.src = 'assets/images/backgrounds/relics.png';
+        
+        // Simple back button
+        this.backButton = { text: 'Back', x: 100, y: 500, width: 100, height: 40 };
+    }
+    
+    handleInput(e) {
+        switch(e.key) {
+            case 'Enter':
+            case ' ':
+            case 'Escape':
+                // Go back to menu
+                this.menuScreens.gameEngine.currentState = 'menu';
+                break;
+        }
+    }
+    
+    render(ctx) {
+        // Clear canvas
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Draw background image
+        if (this.backgroundImage && this.backgroundImage.complete) {
+            ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+        
+        // Draw back button
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(this.backButton.x, this.backButton.y, this.backButton.width, this.backButton.height);
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.backButton.text, this.backButton.x + this.backButton.width/2, this.backButton.y + 28);
+        
+        // Instructions
+        ctx.fillStyle = 'white';
+        ctx.font = '18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Press ESC or Enter to go back', ctx.canvas.width / 2, ctx.canvas.height - 50);
+    }
+}
+
+// Credits Screen Class
+class CreditsScreen {
+    constructor(menuScreens) {
+        this.menuScreens = menuScreens;
+        
+        // Load background image
+        this.backgroundImage = new Image();
+        this.backgroundImage.src = 'assets/images/backgrounds/credits.png';
         
         // Simple back button
         this.backButton = { text: 'Back', x: 100, y: 500, width: 100, height: 40 };
