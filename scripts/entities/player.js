@@ -150,6 +150,9 @@ class Player {
      * Called every frame from main.js
      */
     update() {
+        // Don't update if dying
+        if (this.state === 'dying') return;
+        
         // Get input direction
         let inputDirection = 0;
         if (this.keys.left) inputDirection = -1;
@@ -246,6 +249,9 @@ class Player {
      * Update the player's state based on current conditions
      */
     updateState() {
+        // Don't change state if dying
+        if (this.state === 'dying') return;
+        
         // Determine current state
         if (this.speedY < -0.5) {  // Add threshold for jumping
             this.state = 'jumping';
@@ -267,6 +273,9 @@ class Player {
      * Update sprite animation based on current state
      */
     updateAnimation() {
+        // Don't animate if dying
+        if (this.state === 'dying') return;
+        
         switch(this.state) {
             case 'idle':
             case 'longIdle':
@@ -377,8 +386,26 @@ class Player {
     draw(ctx) {
         ctx.save();
         
-        // Flash when invulnerable
-        if (this.invulnerable && this.invulnerabilityTime % 8 < 4) {
+        // Death animation effects
+        if (this.state === 'dying' && window.gameEngine && window.gameEngine.deathAnimation.active) {
+            const deathTimer = window.gameEngine.deathAnimation.timer;
+            
+            // Phase 1: Flash red/white
+            if (deathTimer < 30) {
+                if (deathTimer % 6 < 3) {
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(this.x - 5, this.y - 5, this.width + 10, this.height + 10);
+                }
+            }
+            // Phase 2-3: Fade out
+            else if (deathTimer > 60) {
+                ctx.globalAlpha = Math.max(0, 1 - (deathTimer - 60) / 60);
+            }
+        }
+        
+        // Flash when invulnerable (but not dying)
+        if (this.invulnerable && this.invulnerabilityTime % 8 < 4 && this.state !== 'dying') {
             ctx.globalAlpha = 0.5;
         }
         
@@ -429,7 +456,7 @@ class Player {
         }
         
         // Reset alpha
-        if (this.invulnerable) {
+        if (this.invulnerable || this.state === 'dying') {
             ctx.globalAlpha = 1;
         }
         
