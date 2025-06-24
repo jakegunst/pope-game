@@ -641,9 +641,6 @@ class CreditsScreen {
         // Load background image
         this.backgroundImage = new Image();
         this.backgroundImage.src = 'assets/images/backgrounds/credits.png';
-        
-        // Simple back button
-        this.backButton = { text: 'Back', x: 100, y: 500, width: 100, height: 40 };
     }
     
     handleInput(e) {
@@ -652,7 +649,7 @@ class CreditsScreen {
             case ' ':
             case 'Escape':
                 // Go back to menu
-            this.menuScreens.gameEngine.currentState = 'menu';
+                this.menuScreens.gameEngine.currentState = this.menuScreens.gameEngine.states.MENU;
                 break;
         }
     }
@@ -666,6 +663,28 @@ class CreditsScreen {
         if (this.backgroundImage && this.backgroundImage.complete) {
             ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
         }
+        
+        // Draw Credits Title
+        ctx.fillStyle = '#FFD700'; // Gold color
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('CREDITS', ctx.canvas.width / 2, 150);
+        
+        // Draw names
+        ctx.fillStyle = 'white';
+        ctx.font = '32px Arial';
+        ctx.fillText('Jacob', ctx.canvas.width / 2, 220);
+        ctx.fillText('Claude', ctx.canvas.width / 2, 270);
+        ctx.fillText('ChatGPT', ctx.canvas.width / 2, 320);
+        
+        // Draw Special Thanks
+        ctx.fillStyle = '#FFD700'; // Gold color
+        ctx.font = 'bold 36px Arial';
+        ctx.fillText('SPECIAL THANKS', ctx.canvas.width / 2, 420);
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '32px Arial';
+        ctx.fillText('Pope Leo XIV', ctx.canvas.width / 2, 480);
         
         // Instructions
         ctx.fillStyle = 'white';
