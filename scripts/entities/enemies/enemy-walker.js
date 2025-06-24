@@ -86,20 +86,27 @@ class EnemyWalker extends EnemyBase {
     checkForEdge() {
         if (!window.collisionDetection || !window.gameEngine) return false;
         
-        // Check point ahead of walker
+        // Check point ahead of walker at ground level
         const checkX = this.x + (this.direction > 0 ? 
             this.width + this.edgeDetectionDistance : 
             -this.edgeDetectionDistance);
         const checkY = this.y + this.height + 10;
         
-        // See if there's ground below the check point
-        const hasGround = window.collisionDetection.checkPoint(
-            checkX, 
-            checkY, 
-            window.gameEngine.currentLevel.platforms
-        );
+        // Get platforms from game engine
+        const platforms = window.gameEngine.currentLevel?.platforms || [];
         
-        return !hasGround;
+        // See if there's a platform below the check point
+        for (let platform of platforms) {
+            // Check if the point is above the platform and within its horizontal bounds
+            if (checkX >= platform.x && 
+                checkX <= platform.x + platform.width &&
+                checkY >= platform.y && 
+                checkY <= platform.y + platform.height + 10) {
+                return false; // There is ground, no edge
+            }
+        }
+        
+        return true; // No ground found, there's an edge
     }
     
     /**
