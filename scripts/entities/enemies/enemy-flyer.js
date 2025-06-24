@@ -7,7 +7,7 @@ class EnemyFlyer extends EnemyBase {
             ...config,
             speed: config.speed || 1.5,
             health: config.health || 1,
-            damage: config.damage || 25,  // CHANGED: Default 25% damage for flyers
+            damage: config.damage || 25,  // Default 25% damage for flyers
             useGravity: false,  // Flyers don't fall
             turnAtEdges: false   // Flyers don't need edge detection
         };
@@ -28,19 +28,17 @@ class EnemyFlyer extends EnemyBase {
         this.flightPattern = config.flightPattern || 'hover';  // hover, circle, patrol
         this.circleRadius = 50;
         this.circleAngle = 0;
+        
+        // Flyers have faster animation
+        this.animationSpeed = 0.2;  // Faster wing flapping
     }
     
     /**
-     * Load flyer sprite
+     * Get sprite row for flyers
+     * Row 3: Condor/flyer sprites
      */
-    loadSprite() {
-        this.sprite = new Image();
-        this.sprite.src = 'assets/images/enemies/flyer-normal.png';
-        
-        this.sprite.onload = () => {
-            this.spriteLoaded = true;
-            console.log('Flyer sprite loaded');
-        };
+    getSpriteRow() {
+        return 3;  // Always use the bottom row for flyers
     }
     
     /**
@@ -156,76 +154,6 @@ class EnemyFlyer extends EnemyBase {
         // Slow down
         this.speedX *= 0.5;
         this.speedY *= 0.5;
-    }
-    
-    /**
-     * Override draw to add wing flapping animation
-     */
-    draw(ctx) {
-        if (!this.isAlive) return;
-        
-        ctx.save();
-        
-        // Flash when invulnerable
-        if (this.invulnerable && this.invulnerabilityTime % 4 < 2) {
-            ctx.globalAlpha = 0.5;
-        }
-        
-        if (this.spriteLoaded && this.sprite) {
-            // Use the parent class animation system instead of custom animation
-            // This uses this.currentFrame which is updated by updateAnimation()
-            
-            // Draw sprite with proper flipping
-            if (this.direction < 0) {
-                ctx.scale(-1, 1);
-                ctx.drawImage(
-                    this.sprite,
-                    this.currentFrame * this.frameWidth, 0,
-                    this.frameWidth, this.frameHeight,
-                    -this.x - this.width, this.y,
-                    this.width, this.height
-                );
-            } else {
-                ctx.drawImage(
-                    this.sprite,
-                    this.currentFrame * this.frameWidth, 0,
-                    this.frameWidth, this.frameHeight,
-                    this.x, this.y,
-                    this.width, this.height
-                );
-            }
-        } else {
-            // Fallback: Draw as flying creature
-            ctx.fillStyle = this.isSwooping ? '#FF0000' : this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            
-            // Draw wings
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            const wingOffset = Math.sin(this.hoverOffset * 4) * 5;
-            ctx.fillRect(this.x - 5, this.y + 5 + wingOffset, 5, 15);
-            ctx.fillRect(this.x + this.width, this.y + 5 - wingOffset, 5, 15);
-            
-            // Draw eyes
-            ctx.fillStyle = 'white';
-            const eyeY = this.y + 8;
-            if (this.direction > 0) {
-                ctx.fillRect(this.x + 18, eyeY, 3, 3);
-                ctx.fillRect(this.x + 23, eyeY, 3, 3);
-            } else {
-                ctx.fillRect(this.x + 6, eyeY, 3, 3);
-                ctx.fillRect(this.x + 11, eyeY, 3, 3);
-            }
-        }
-        
-        ctx.restore();
-        
-        // Draw health bar if damaged
-        if (this.health < this.maxHealth) {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(this.x, this.y - 8, this.width, 4);
-            ctx.fillStyle = 'green';
-            ctx.fillRect(this.x, this.y - 8, this.width * (this.health / this.maxHealth), 4);
-        }
     }
 }
 
