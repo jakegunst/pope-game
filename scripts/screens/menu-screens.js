@@ -94,6 +94,10 @@ class MenuScreens {
             case 'settings':
                 this.handleSettingsInput(e);
                 break;
+          
+            case 'relics_cache':
+                this.handleRelicsCacheInput(e);
+                break;
         }
     }
     
