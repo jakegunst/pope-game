@@ -15,6 +15,7 @@ class GameEngine {
             GAME_OVER: 'game_over',
             VICTORY: 'victory',
             LEVEL_SELECT: 'level_select'
+            SETTINGS: 'settings'  // ADD THIS
         };
         this.currentState = this.states.START_SCREEN;
         this.previousState = null;
@@ -849,11 +850,12 @@ class GameEngine {
     setupInputHandlers() {
         window.addEventListener('keydown', (e) => {
             // Handle menu input first
-            if ((this.currentState === this.states.START_SCREEN || 
-                 this.currentState === this.states.MENU) && this.menuScreens) {
-                this.menuScreens.handleInput(e);
-                return;
-            }
+if ((this.currentState === this.states.START_SCREEN || 
+     this.currentState === this.states.MENU ||
+     this.currentState === this.states.SETTINGS) && this.menuScreens) {  // ADD SETTINGS HERE
+    this.menuScreens.handleInput(e);
+    return;
+}
             
             // Handle ESC to return to menu
             if (e.key === 'Escape') {
@@ -927,9 +929,12 @@ class GameEngine {
             case 'Resume':
                 this.currentState = this.states.PLAYING;
                 break;
-            case 'Settings':
-                // TODO: Open settings menu
-                break;
+case 'Settings':
+    if (this.menuScreens) {
+        this.menuScreens.openSettings();
+        this.menuScreens.previousState = this.states.PAUSED;  // Remember we came from pause
+    }
+    break;
             case 'Quit to Menu':
                 this.currentState = this.states.MENU;
                 break;
