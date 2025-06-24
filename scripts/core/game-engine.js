@@ -14,7 +14,7 @@ class GameEngine {
             BOSS_FIGHT: 'boss_fight',
             GAME_OVER: 'game_over',
             VICTORY: 'victory',
-            LEVEL_SELECT: 'level_select'
+            LEVEL_SELECT: 'level_select',
             SETTINGS: 'settings'  // ADD THIS
         };
         this.currentState = this.states.START_SCREEN;
