@@ -832,25 +832,43 @@ class GameEngine {
         }
     }
 
-    /**
-     * Render victory screen
-     */
-    renderVictory() {
-        // Fill screen with celebration color
+/**
+ * Render victory screen
+ */
+renderVictory() {
+    // Load victory image if not already loaded
+    if (!this.victoryImage) {
+        this.victoryImage = new Image();
+        this.victoryImage.src = 'assets/images/backgrounds/victory.png';
+    }
+    
+    // Clear screen
+    this.ctx.fillStyle = '#000';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw victory background image
+    if (this.victoryImage && this.victoryImage.complete) {
+        this.ctx.drawImage(this.victoryImage, 0, 0, this.canvas.width, this.canvas.height);
+    } else {
+        // Fallback gold background if image hasn't loaded
         this.ctx.fillStyle = 'gold';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Victory message
-        this.ctx.fillStyle = 'black';
-        this.ctx.font = '48px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('LEVEL COMPLETE!', this.canvas.width/2, this.canvas.height/2);
-        
-        this.ctx.font = '24px Arial';
-        this.ctx.fillText('Press R to restart', this.canvas.width/2, this.canvas.height/2 + 60);
-        
-        this.ctx.textAlign = 'left';
     }
+    
+    // Victory message - now in white
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = 'bold 48px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.shadowColor = 'black';
+    this.ctx.shadowBlur = 10;
+    this.ctx.fillText('LEVEL COMPLETE!', this.canvas.width/2, this.canvas.height/2);
+    
+    this.ctx.shadowBlur = 0;
+    this.ctx.font = '24px Arial';
+    this.ctx.fillText('Press R to restart', this.canvas.width/2, this.canvas.height/2 + 60);
+    
+    this.ctx.textAlign = 'left';
+}
 
     /**
      * Setup input handlers
