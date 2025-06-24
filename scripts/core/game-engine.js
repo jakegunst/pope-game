@@ -186,6 +186,12 @@ class GameEngine {
             case this.states.PAUSED:
                 this.updatePaused();
                 break;
+    //adding settings
+            case this.states.SETTINGS:
+                if (this.menuScreens) {
+                this.menuScreens.update(1/60);
+                }
+                break;
             case this.states.GAME_OVER:
                 this.updateGameOver();
                 break;
