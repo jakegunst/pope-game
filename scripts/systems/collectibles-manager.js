@@ -20,31 +20,47 @@ class CollectiblesManager {
             breastplate: { active: false, timer: 0, duration: 600 }
         };
         
+        // Load sprite sheet
+        this.spriteSheet = new Image();
+        this.spriteSheet.src = 'assets/images/tiles/collectibles.png';
+        this.spriteSheet.onload = () => {
+            console.log('Collectibles sprite sheet loaded');
+        };
+        
+        // Sprite positions on the sheet (based on your image)
+        // Each sprite is 16x16 pixels
+        this.sprites = {
+            leaf: { x: 0, y: 0, width: 16, height: 16 },      // Green leaf
+            coin: { x: 16, y: 0, width: 16, height: 16 },     // Gold coin
+            health: { x: 32, y: 0, width: 16, height: 16 },   // Heart/health
+            relic: { x: 48, y: 0, width: 16, height: 16 }     // Brown relic
+        };
+        
         // Collectible types configuration
         this.collectibleTypes = {
             tithe: {
                 width: 16,
                 height: 16,
                 value: 1,
-                color: '#FFD700', // Gold
+                sprite: 'coin',
                 animation: 'floatAndRotate',
                 sound: 'coin',
                 particleColor: '#FFD700'
             },
             beer: {
-                width: 20,
-                height: 24,
+                width: 16,
+                height: 16,
                 value: 25, // 25% health
-                color: '#8B4513', // Brown
+                sprite: 'health',
                 animation: 'float',
                 sound: 'gulp',
-                particleColor: '#8B4513'
+                particleColor: '#FF0000'
             },
             leaves: {
-                width: 24,
-                height: 20,
+                width: 16,
+                height: 16,
                 value: 10, // Duration in seconds
-                color: '#228B22', // Green
+                sprite: 'leaf',
                 animation: 'sway',
                 sound: 'powerup',
                 particleColor: '#00FF00'
@@ -52,17 +68,16 @@ class CollectiblesManager {
             breastplate: {
                 width: 28,
                 height: 24,
-                value: 10, // Duration in seconds
-                color: '#C0C0C0', // Silver
+                sprite: null, // Still uses drawn graphic
                 animation: 'pulse',
                 sound: 'armor',
                 particleColor: '#FFFFFF'
             },
             relic: {
-                width: 24,
-                height: 24,
+                width: 16,
+                height: 16,
                 value: 1,
-                color: '#8B4513', // Brown (glove)
+                sprite: 'relic',
                 animation: 'floatAndGlow',
                 sound: 'holy',
                 particleColor: '#FFD700'
@@ -71,7 +86,7 @@ class CollectiblesManager {
                 width: 16,
                 height: 20,
                 value: 1,
-                color: '#8B0000', // Dark red
+                sprite: null, // Still uses drawn graphic
                 animation: 'pulse',
                 sound: 'holy',
                 particleColor: '#FF0000'
@@ -80,7 +95,7 @@ class CollectiblesManager {
                 width: 20,
                 height: 32,
                 value: 1,
-                color: '#FFD700', // Gold
+                sprite: null, // Still uses drawn graphic
                 animation: 'floatAndRotate',
                 sound: 'key',
                 particleColor: '#FFFF00'
@@ -516,46 +531,22 @@ class CollectiblesManager {
     drawCollectible(ctx, type, x, y, width, height) {
         const config = this.collectibleTypes[type];
         
+        // Use sprite if available and sprite sheet is loaded
+        if (config.sprite && this.spriteSheet.complete) {
+            const sprite = this.sprites[config.sprite];
+            ctx.drawImage(
+                this.spriteSheet,
+                sprite.x, sprite.y, sprite.width, sprite.height,  // Source
+                x, y, width, height  // Destination
+            );
+            return;
+        }
+        
+        // Fallback to drawn graphics for items without sprites
         switch (type) {
-            case 'tithe':
-                // Draw coin
-                ctx.fillStyle = config.color;
-                ctx.beginPath();
-                ctx.arc(x + width/2, y + height/2, width/2, 0, Math.PI * 2);
-                ctx.fill();
-                // Inner circle
-                ctx.fillStyle = '#FFA500';
-                ctx.beginPath();
-                ctx.arc(x + width/2, y + height/2, width/3, 0, Math.PI * 2);
-                ctx.fill();
-                break;
-                
-            case 'beer':
-                // Draw beer mug
-                ctx.fillStyle = config.color;
-                ctx.fillRect(x + 2, y + 4, width - 4, height - 4);
-                // Handle
-                ctx.strokeStyle = config.color;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(x + width - 2, y + height/2, 4, -Math.PI/2, Math.PI/2);
-                ctx.stroke();
-                // Foam
-                ctx.fillStyle = 'white';
-                ctx.fillRect(x + 2, y + 4, width - 4, 4);
-                break;
-                
-            case 'leaves':
-                // Draw simple leaf shape
-                ctx.fillStyle = config.color;
-                ctx.beginPath();
-                ctx.ellipse(x + width/2, y + height/2, width/2, height/2, Math.PI/4, 0, Math.PI * 2);
-                ctx.fill();
-                break;
-                
             case 'breastplate':
                 // Draw simple armor shape
-                ctx.fillStyle = config.color;
+                ctx.fillStyle = '#C0C0C0';
                 ctx.fillRect(x + 2, y, width - 4, height);
                 // Decorative cross
                 ctx.fillStyle = '#FFD700';
@@ -563,16 +554,9 @@ class CollectiblesManager {
                 ctx.fillRect(x + 6, y + height/3, width - 12, 2);
                 break;
                 
-            case 'relic':
-                // Draw glove shape
-                ctx.fillStyle = config.color;
-                ctx.fillRect(x + width/3, y, width/3, height * 0.7);
-                ctx.fillRect(x, y + height * 0.6, width, height * 0.4);
-                break;
-                
             case 'popeBlood':
                 // Draw droplet
-                ctx.fillStyle = config.color;
+                ctx.fillStyle = '#8B0000';
                 ctx.beginPath();
                 ctx.arc(x + width/2, y + height * 0.7, width/2, 0, Math.PI * 2);
                 ctx.moveTo(x + width/2, y);
@@ -584,7 +568,7 @@ class CollectiblesManager {
                 
             case 'keysOfPeter':
                 // Draw key shape
-                ctx.fillStyle = config.color;
+                ctx.fillStyle = '#FFD700';
                 ctx.fillRect(x + width/2 - 2, y + height/3, 4, height * 2/3);
                 ctx.fillRect(x + width/2 - 4, y + height - 4, 8, 4);
                 ctx.fillRect(x + width/2 - 3, y + height - 8, 6, 2);
@@ -595,8 +579,8 @@ class CollectiblesManager {
                 break;
                 
             default:
-                // Default rectangle
-                ctx.fillStyle = config.color;
+                // Default rectangle for unknown types
+                ctx.fillStyle = config.color || '#FF00FF';
                 ctx.fillRect(x, y, width, height);
         }
     }
