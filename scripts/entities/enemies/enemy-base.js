@@ -256,7 +256,7 @@ class EnemyBase {
             
             // Otherwise damage player
             if (!window.player.invulnerable) {
-                window.gameEngine.playerStats.health -= this.damage * 10;
+                window.gameEngine.playerStats.health -= this.damage;  // CHANGED: Now uses direct percentage
                 window.player.invulnerable = true;
                 window.player.invulnerabilityTime = 60;
                 
@@ -264,6 +264,11 @@ class EnemyBase {
                 const knockbackDir = window.player.x < this.x ? -1 : 1;
                 window.player.speedX = knockbackDir * 8;
                 window.player.speedY = -5;
+                
+                // Check if player died
+                if (window.gameEngine.playerStats.health <= 0) {
+                    window.gameEngine.playerDeath();
+                }
             }
         }
     }
