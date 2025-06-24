@@ -131,7 +131,30 @@ class MenuScreens {
                 break;
         }
     }
+    openSettings() {
+        // Create settings screen if needed
+        if (!this.settingsScreen) {
+            this.settingsScreen = new SettingsScreen(this);
+        }
+        
+        // Store where we came from
+        this.previousState = this.gameEngine.currentState;
+        
+        // Change state to settings
+        this.gameEngine.currentState = 'settings';
+    }
     
+    returnFromSettings() {
+        // Return to previous state
+        this.gameEngine.currentState = this.previousState || 'menu';
+        this.previousState = null;
+    }
+    
+    handleSettingsInput(e) {
+        if (this.settingsScreen) {
+            this.settingsScreen.handleInput(e);
+        }
+    }
     update(deltaTime) {
         // Update animations
         this.floatAnimation += deltaTime * 2;
