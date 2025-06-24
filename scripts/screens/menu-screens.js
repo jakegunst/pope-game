@@ -130,6 +130,9 @@ class MenuScreens {
                 } else if (selected.text === 'Relics Cache') {
                     // Open relics cache
                     this.openRelicsCache();
+                } else if (selected.text === 'Credits') {
+                    // Open credits
+                    this.openCredits();
                 } else {
                     // Show "coming soon" message for disabled options
                     this.showMessage = true;
@@ -165,6 +168,19 @@ class MenuScreens {
     this.gameEngine.currentState = 'relics_cache';
 }
     
+openCredits() {
+    // Create credits screen if needed
+    if (!this.creditsScreen) {
+        this.creditsScreen = new CreditsScreen(this);
+    }
+    
+    // Store where we came from
+    this.previousState = this.gameEngine.currentState;
+    
+    // Change state to credits
+    this.gameEngine.currentState = 'credits';
+}
+
     returnFromSettings() {
         // Return to previous state
         this.gameEngine.currentState = this.previousState || 'menu';
@@ -176,7 +192,17 @@ class MenuScreens {
             this.settingsScreen.handleInput(e);
         }
     }
-    
+
+    handleRelicsCacheInput(e) {
+        if (this.relicsCacheScreen) {
+            this.relicsCacheScreen.handleInput(e);
+        }
+    }
+    handleCreditsInput(e) {
+        if (this.creditsScreen) {
+            this.creditsScreen.handleInput(e);
+        }
+    }
     update(deltaTime) {
         // Update animations
         this.floatAnimation += deltaTime * 2;
@@ -204,6 +230,16 @@ class MenuScreens {
             case 'settings':
                 if (this.settingsScreen) {
                     this.settingsScreen.render(this.ctx);
+                }
+                break;
+            case 'relics_cache':
+                if (this.relicsCacheScreen) {
+                    this.relicsCacheScreen.render(this.ctx);
+                }
+                break;
+            case 'credits':
+                if (this.creditsScreen) {
+                    this.creditsScreen.render(this.ctx);
                 }
                 break;
         }
