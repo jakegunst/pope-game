@@ -172,16 +172,15 @@ class EnemyFlyer extends EnemyBase {
         }
         
         if (this.spriteLoaded && this.sprite) {
-            // Flyer sprites might have multiple frames for wing positions
-            const frameCount = 2;
-            const currentFrame = Math.floor(this.animationTimer * 10) % frameCount;
+            // Use the parent class animation system instead of custom animation
+            // This uses this.currentFrame which is updated by updateAnimation()
             
-            // Draw sprite with animation
+            // Draw sprite with proper flipping
             if (this.direction < 0) {
                 ctx.scale(-1, 1);
                 ctx.drawImage(
                     this.sprite,
-                    currentFrame * this.frameWidth, 0,
+                    this.currentFrame * this.frameWidth, 0,
                     this.frameWidth, this.frameHeight,
                     -this.x - this.width, this.y,
                     this.width, this.height
@@ -189,14 +188,12 @@ class EnemyFlyer extends EnemyBase {
             } else {
                 ctx.drawImage(
                     this.sprite,
-                    currentFrame * this.frameWidth, 0,
+                    this.currentFrame * this.frameWidth, 0,
                     this.frameWidth, this.frameHeight,
                     this.x, this.y,
                     this.width, this.height
                 );
             }
-            
-            this.animationTimer += 0.016;  // Assuming 60fps
         } else {
             // Fallback: Draw as flying creature
             ctx.fillStyle = this.isSwooping ? '#FF0000' : this.color;
