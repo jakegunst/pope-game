@@ -478,15 +478,14 @@ render() {
     // Clear screen
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Render menu screens first (no camera transform needed)
-    if ((this.currentState === this.states.START_SCREEN || 
-         this.currentState === this.states.MENU ||
-         this.currentState === this.states.SETTINGS ||
-         this.currentState === this.states.RELICS_CACHE ||
-         this.currentState === this.states.CREDITS) && this.menuScreens) {
-        this.menuScreens.render();
-        return;
-    }
+    if (this.currentState === this.states.MENU || 
+    this.currentState === this.states.START_SCREEN ||
+    this.currentState === this.states.SETTINGS ||
+    this.currentState === this.states.RELICS_CACHE ||
+    this.currentState === this.states.CREDITS) {
+    this.menuScreens.handleInput(e);
+    return;
+}
         
         // Save context state
         this.ctx.save();
