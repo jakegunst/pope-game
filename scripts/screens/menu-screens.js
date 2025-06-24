@@ -94,6 +94,9 @@ class MenuScreens {
             case 'settings':
                 this.handleSettingsInput(e);
                 break;
+            case 'Relics Cache':
+                this.openRelicsCache();
+                break;
         }
     }
     
@@ -120,13 +123,17 @@ class MenuScreens {
                         }
                     });
                     // Music continues playing
-                } else if (selected.text === 'Settings') {
+              } else if (selected.text === 'Settings') {
                     // Open settings
                     this.openSettings();
+                } else if (selected.text === 'Relics Cache') {
+                    // Open relics cache
+                    this.openRelicsCache();
                 } else {
                     // Show "coming soon" message for disabled options
                     this.showMessage = true;
                     this.messageTimer = 180; // 3 seconds at 60fps
+                }
                 }
                 break;
         }
