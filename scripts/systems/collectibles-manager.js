@@ -22,25 +22,25 @@ class CollectiblesManager {
         
         // Load sprite sheet
         this.spriteSheet = new Image();
-        this.spriteSheet.src = 'assets/images/tiles/collectibles.png';
+        this.spriteSheet.src = 'assets/images/tiles/collectibles-and-enemies.png';
         this.spriteSheet.onload = () => {
             console.log('Collectibles sprite sheet loaded');
         };
         
         // Sprite positions on the sheet (based on your image)
-        // Each sprite is 16x16 pixels
+        // Each sprite is 32x32 pixels
         this.sprites = {
-            leaf: { x: 0, y: 0, width: 16, height: 16 },      // Green leaf
-            coin: { x: 16, y: 0, width: 16, height: 16 },     // Gold coin
-            health: { x: 32, y: 0, width: 16, height: 16 },   // Heart/health
-            relic: { x: 48, y: 0, width: 16, height: 16 }     // Brown relic
+            leaf: { x: 0, y: 0, width: 32, height: 32 },      // Green leaf
+            coin: { x: 32, y: 0, width: 32, height: 32 },     // Gold coin
+            health: { x: 64, y: 0, width: 32, height: 32 },   // Heart/health
+            relic: { x: 96, y: 0, width: 32, height: 32 }     // Brown relic
         };
         
         // Collectible types configuration
         this.collectibleTypes = {
             tithe: {
-                width: 16,
-                height: 16,
+                width: 32,
+                height: 32,
                 value: 1,
                 sprite: 'coin',
                 animation: 'floatAndRotate',
@@ -48,8 +48,8 @@ class CollectiblesManager {
                 particleColor: '#FFD700'
             },
             beer: {
-                width: 16,
-                height: 16,
+                width: 32,
+                height: 32,
                 value: 25, // 25% health
                 sprite: 'health',
                 animation: 'float',
@@ -57,8 +57,8 @@ class CollectiblesManager {
                 particleColor: '#FF0000'
             },
             leaves: {
-                width: 16,
-                height: 16,
+                width: 32,
+                height: 32,
                 value: 10, // Duration in seconds
                 sprite: 'leaf',
                 animation: 'sway',
@@ -74,8 +74,8 @@ class CollectiblesManager {
                 particleColor: '#FFFFFF'
             },
             relic: {
-                width: 16,
-                height: 16,
+                width: 32,
+                height: 32,
                 value: 1,
                 sprite: 'relic',
                 animation: 'floatAndGlow',
