@@ -54,7 +54,7 @@ class EnemyBase {
         this.animationTimer = 0;
         this.animationSpeed = 0.1;
         this.frameCount = 3; // 3 frames per enemy type in the sprite sheet
-        this.spriteSize = 16; // Each sprite is 16x16 in the sheet
+        this.spriteSize = 32; // Each sprite is 32x32 in the sheet
         
         // Load the shared sprite sheet
         this.loadSpriteSheet();
