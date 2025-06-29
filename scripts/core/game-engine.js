@@ -145,6 +145,8 @@ class GameEngine {
         const spawn = this.levelLoader.getSpawnPosition();
         player.x = spawn.x;
         player.y = spawn.y;
+console.log('Spawning player at:', spawn.x, spawn.y);
+console.log('Level dimensions:', this.currentLevel.pixelWidth, 'x', this.currentLevel.pixelHeight);
         
         // IMPORTANT: Clear player input state to fix the "stuck key" bug
         player.keys = {
