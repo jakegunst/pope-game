@@ -35,6 +35,9 @@ class MenuScreens {
         this.settingsScreen = null;
         this.previousState = null;  // Track where we came from
         
+        // Level select screen instance
+        this.levelSelectScreen = null;
+        
         // Load assets
         this.loadAssets();
     }
@@ -91,6 +94,10 @@ class MenuScreens {
                 this.handleMenuInput(e);
                 break;
                 
+            case 'level_select':
+                this.handleLevelSelectInput(e);
+                break;
+                
             case 'settings':
                 this.handleSettingsInput(e);
                 break;
@@ -118,16 +125,8 @@ class MenuScreens {
             case 'Enter':
                 const selected = this.menuOptions[this.menuSelection];
                 if (selected.text === 'Play Game') {
-                    // Load the test level and initialize game
-                    this.gameEngine.init('data/levels/chicago-level.json').then(success => {
-                        if (success) {
-                            console.log('Level loaded successfully, starting game');
-                            // Game state is already set to PLAYING by init()
-                        } else {
-                            console.error('Failed to load level');
-                        }
-                    });
-                    // Music continues playing
+                    // Open level selector instead of directly loading a level
+                    this.openLevelSelect();
                 } else if (selected.text === 'Settings') {
                     // Open settings
                     this.openSettings();
@@ -143,6 +142,25 @@ class MenuScreens {
                     this.messageTimer = 180; // 3 seconds at 60fps
                 }
                 break;
+        }
+    }
+    
+    openLevelSelect() {
+        // Create level select screen if needed
+        if (!this.levelSelectScreen) {
+            this.levelSelectScreen = new LevelSelectScreen(this);
+        }
+        
+        // Store where we came from
+        this.previousState = this.gameEngine.currentState;
+        
+        // Change state to level select
+        this.gameEngine.currentState = 'level_select';
+    }
+    
+    handleLevelSelectInput(e) {
+        if (this.levelSelectScreen) {
+            this.levelSelectScreen.handleInput(e);
         }
     }
     
@@ -232,6 +250,12 @@ class MenuScreens {
                 
             case 'menu':
                 this.renderMainMenu();
+                break;
+                
+            case 'level_select':
+                if (this.levelSelectScreen) {
+                    this.levelSelectScreen.render(this.ctx);
+                }
                 break;
                 
             case 'settings':
@@ -402,6 +426,175 @@ class MenuScreens {
         
         // Restore context
         this.ctx.restore();
+    }
+}
+
+// Level Select Screen Class
+class LevelSelectScreen {
+    constructor(menuScreens) {
+        this.menuScreens = menuScreens;
+        
+        // Load background image (you'll need to create this)
+        this.backgroundImage = new Image();
+        this.backgroundImage.src = 'assets/images/backgrounds/level-select.png';
+        
+        // Define available levels
+        this.levels = [
+            {
+                name: 'Chicago Streets',
+                path: 'data/levels/chicago-level.json',
+                description: 'Navigate the windy city',
+                completed: false
+            },
+            {
+                name: 'Peru - Machu Picchu',
+                path: 'data/levels/peru1.json',
+                description: 'Ancient ruins await',
+                completed: false
+            },
+            {
+                name: 'Test Arena',
+                path: 'data/levels/test-level-enemies.json',
+                description: 'Practice your skills',
+                completed: false
+            }
+        ];
+        
+        this.selectedLevel = 0;
+        
+        // Check completion status
+        this.updateCompletionStatus();
+    }
+    
+    updateCompletionStatus() {
+        // Check if levels have been completed based on saved data
+        // For now, we'll just check if any relics were collected in each level
+        const relicsCollected = this.menuScreens.gameEngine.playerStats.relicsCollected;
+        
+        // Mark levels as completed if they have relics from that level
+        relicsCollected.forEach(relicId => {
+            if (relicId.startsWith('chicago')) {
+                this.levels[0].completed = true;
+            } else if (relicId.startsWith('peru1')) {
+                this.levels[1].completed = true;
+            }
+        });
+    }
+    
+    handleInput(e) {
+        switch(e.key) {
+            case 'ArrowUp':
+                this.selectedLevel = (this.selectedLevel - 1 + this.levels.length) % this.levels.length;
+                break;
+                
+            case 'ArrowDown':
+                this.selectedLevel = (this.selectedLevel + 1) % this.levels.length;
+                break;
+                
+            case 'Enter':
+                // Load the selected level
+                const level = this.levels[this.selectedLevel];
+                this.menuScreens.gameEngine.init(level.path).then(success => {
+                    if (success) {
+                        console.log('Level loaded successfully:', level.name);
+                    } else {
+                        console.error('Failed to load level:', level.name);
+                    }
+                });
+                break;
+                
+            case 'Escape':
+                // Return to main menu
+                this.menuScreens.gameEngine.currentState = 'menu';
+                break;
+        }
+    }
+    
+    render(ctx) {
+        // Clear canvas
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Draw background image if loaded
+        if (this.backgroundImage && this.backgroundImage.complete) {
+            ctx.drawImage(this.backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        } else {
+            // Fallback gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+            gradient.addColorStop(0, '#1a0033');
+            gradient.addColorStop(0.5, '#2d1b69');
+            gradient.addColorStop(1, '#1a0033');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+        
+        // Title
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('SELECT LEVEL', ctx.canvas.width / 2, 80);
+        
+        // Level list
+        this.levels.forEach((level, index) => {
+            const y = 180 + index * 120;
+            const selected = index === this.selectedLevel;
+            
+            // Selection highlight
+            if (selected) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(100, y - 40, ctx.canvas.width - 200, 100);
+                
+                // Selection arrow
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '32px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('>', 70, y + 10);
+            }
+            
+            // Level name
+            ctx.fillStyle = selected ? '#FFD700' : '#FFFFFF';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(level.name, 120, y);
+            
+            // Level description
+            ctx.fillStyle = selected ? '#FFFFFF' : '#CCCCCC';
+            ctx.font = '20px Arial';
+            ctx.fillText(level.description, 120, y + 35);
+            
+            // Completion status
+            if (level.completed) {
+                ctx.fillStyle = '#00FF00';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('COMPLETED', ctx.canvas.width - 120, y);
+            }
+            
+            // Show relic count for this level
+            const levelKey = level.path.split('/').pop().replace('.json', '');
+            const relicsInLevel = this.menuScreens.gameEngine.playerStats.relicsCollected
+                .filter(id => id.startsWith(levelKey)).length;
+            
+            if (relicsInLevel > 0) {
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '18px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Relics: ${relicsInLevel}`, ctx.canvas.width - 120, y + 30);
+            }
+        });
+        
+        // Instructions
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Use Arrow Keys to select, Enter to start, ESC to go back', ctx.canvas.width / 2, ctx.canvas.height - 50);
+        
+        // Total relics collected
+        const totalRelics = this.menuScreens.gameEngine.playerStats.relicsCollected.length;
+        ctx.fillStyle = '#FFD700';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Total Relics: ${totalRelics}`, 50, ctx.canvas.height - 80);
     }
 }
 
