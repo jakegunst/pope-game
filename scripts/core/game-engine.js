@@ -947,6 +947,7 @@ renderVictory() {
 if ((this.currentState === this.states.START_SCREEN || 
      this.currentState === this.states.MENU ||
      this.currentState === this.states.SETTINGS ||
+     this.currentState === this.states.LEVEL_SELECT || 
      this.currentState === this.states.RELICS_CACHE ||
      this.currentState === this.states.CREDITS) && this.menuScreens) {
     this.menuScreens.handleInput(e);
