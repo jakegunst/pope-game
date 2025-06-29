@@ -159,6 +159,7 @@ class MenuScreens {
     }
     
     handleLevelSelectInput(e) {
+console.log('Level select input:', e.key);  // Add this debug line
         if (this.levelSelectScreen) {
             this.levelSelectScreen.handleInput(e);
         }
@@ -482,6 +483,8 @@ class LevelSelectScreen {
     }
     
     handleInput(e) {
+        console.log('LevelSelectScreen received input:', e.key);  // Add this debug line too
+
         switch(e.key) {
             case 'ArrowUp':
                 this.selectedLevel = (this.selectedLevel - 1 + this.levels.length) % this.levels.length;
