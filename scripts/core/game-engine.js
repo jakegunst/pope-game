@@ -34,7 +34,7 @@ class GameEngine {
             bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 }
         };
         
-        // Player stats
+        // Player stats - UPDATED WITH RELICS
         this.playerStats = {
             lives: 3,
             health: 100,
@@ -44,11 +44,13 @@ class GameEngine {
             powerUps: [],
             popeBlood: 0,
             holyWater: 100,
-            maxHolyWater: 100
+            maxHolyWater: 100,
+            relicsCollected: []  // NEW: Array of collected relic IDs
         };
         
         // Level state
         this.currentLevel = null;
+        this.currentLevelPath = null;  // NEW: Track current level path
         this.levelTime = 0;
         this.showTimer = false;
         this.showPopeBlood = false;
@@ -112,12 +114,18 @@ class GameEngine {
         
         // Input handling
         this.setupInputHandlers();
+        
+        // Load saved game data if exists
+        this.loadGameData();
     }
 
     /**
      * Initialize the engine and load a level
      */
     async init(levelPath) {
+        // Store current level path
+        this.currentLevelPath = levelPath;
+        
         // Load the level
         this.currentLevel = await this.levelLoader.loadLevel(levelPath);
         if (!this.currentLevel) {
@@ -154,8 +162,8 @@ class GameEngine {
             window.enemyManager.init(this.currentLevel);
         }
         
-        // Initialize collectibles
-        this.collectiblesManager.init(this.currentLevel);
+        // Initialize collectibles with relic filtering
+        this.initializeCollectiblesWithRelicCheck();
         
         // Initialize chunks
         this.initializeChunks();
@@ -169,6 +177,35 @@ class GameEngine {
         this.currentState = this.states.PLAYING;
         
         return true;
+    }
+    
+    /**
+     * Initialize collectibles and filter out already collected relics
+     */
+    initializeCollectiblesWithRelicCheck() {
+        // Get the level name from path (e.g., "peru1" from "data/levels/peru1.json")
+        const levelName = this.currentLevelPath.split('/').pop().replace('.json', '');
+        
+        // Filter out already collected relics
+        if (this.currentLevel.collectibles) {
+            const filteredCollectibles = this.currentLevel.collectibles.filter(item => {
+                if (item.type === 'relic') {
+                    const relicId = `${levelName}-${item.x}-${item.y}`;
+                    return !this.playerStats.relicsCollected.includes(relicId);
+                }
+                return true;
+            });
+            
+            // Create a modified level data for collectibles manager
+            const modifiedLevel = {
+                ...this.currentLevel,
+                collectibles: filteredCollectibles
+            };
+            
+            this.collectiblesManager.init(modifiedLevel);
+        } else {
+            this.collectiblesManager.init(this.currentLevel);
+        }
     }
 
     /**
@@ -244,6 +281,9 @@ class GameEngine {
         // Update collectibles
         this.collectiblesManager.update();
         
+        // Check for relic collection - NEW
+        this.checkRelicCollection();
+        
         // Check if player fell off bottom
         if (player.y > this.currentLevel.pixelHeight + 100) {
             this.playerDeath();
@@ -261,6 +301,25 @@ class GameEngine {
         if (this.debug.godMode) {
             this.playerStats.health = this.playerStats.maxHealth;
         }
+    }
+    
+    /**
+     * Check if any relics were collected and save them
+     */
+    checkRelicCollection() {
+        const levelName = this.currentLevelPath.split('/').pop().replace('.json', '');
+        
+        this.collectiblesManager.collectibles.forEach(item => {
+            if (item.type === 'relic' && item.collected && !item.saved) {
+                const relicId = `${levelName}-${item.x}-${item.y}`;
+                if (!this.playerStats.relicsCollected.includes(relicId)) {
+                    this.playerStats.relicsCollected.push(relicId);
+                    item.saved = true;
+                    this.saveGameData();
+                    console.log(`Relic saved: ${relicId}`);
+                }
+            }
+        });
     }
 
     /**
@@ -641,8 +700,10 @@ class GameEngine {
         const colors = {
             'solid': '#654321',
             'bouncy_platform': '#FF69B4',
+            'very_bouncy_platform': '#FF1493',  // Darker pink for very bouncy
             'oneway': '#90EE90',
-            'platform_r_slow': '#FFD700'
+            'platform_r_slow': '#FFD700',
+            'falling_platform': '#CD853F'  // Sandy brown for falling platforms
         };
         
         this.ctx.fillStyle = colors[platform.type] || '#808080';
@@ -709,6 +770,9 @@ class GameEngine {
         if (parseInt(stats.relics.split('/')[1]) > 0) {
             this.ctx.fillText(`Relics: ${stats.relics}`, 10, 130);
         }
+        
+        // NEW: Show total relics collected across all levels
+        this.ctx.fillText(`Total Relics: ${this.playerStats.relicsCollected.length}`, 10, 155);
         
         // Top right - Power-ups
         let rightY = 30;
@@ -987,6 +1051,40 @@ case 'Settings':
         
         return saveData;
     }
+    
+    /**
+     * Save game data (relics, stats, etc)
+     */
+    saveGameData() {
+        const gameData = {
+            relicsCollected: this.playerStats.relicsCollected,
+            totalCoins: this.playerStats.coins,
+            totalScore: this.playerStats.score
+        };
+        
+        // In a real game, save to localStorage or server
+        // For now, just log it
+        console.log('Game data saved:', gameData);
+        
+        // You could use localStorage like this (won't work in Claude):
+        // localStorage.setItem('popeGameData', JSON.stringify(gameData));
+    }
+    
+    /**
+     * Load game data
+     */
+    loadGameData() {
+        // In a real game, load from localStorage or server
+        // For now, just use default values
+        console.log('Loading game data...');
+        
+        // You could use localStorage like this (won't work in Claude):
+        // const saved = localStorage.getItem('popeGameData');
+        // if (saved) {
+        //     const data = JSON.parse(saved);
+        //     this.playerStats.relicsCollected = data.relicsCollected || [];
+        // }
+    }
 
     /**
      * Render debug info
@@ -995,7 +1093,7 @@ case 'Settings':
         this.ctx.fillStyle = 'lime';
         this.ctx.font = '12px monospace';
         
-        let debugY = 150;
+        let debugY = 180;  // Start lower to avoid overlapping with relics display
         this.ctx.fillText(`State: ${this.currentState}`, 10, debugY);
         debugY += 15;
         this.ctx.fillText(`Camera: ${Math.floor(this.camera.x)}, ${Math.floor(this.camera.y)}`, 10, debugY);
@@ -1005,6 +1103,8 @@ case 'Settings':
         this.ctx.fillText(`God Mode: ${this.debug.godMode}`, 10, debugY);
         debugY += 15;
         this.ctx.fillText(`Health: ${this.playerStats.health}/${this.playerStats.maxHealth}`, 10, debugY);
+        debugY += 15;
+        this.ctx.fillText(`Relics: ${this.playerStats.relicsCollected.length}`, 10, debugY);
         
         // Draw player hitbox
         if (player) {
@@ -1125,7 +1225,7 @@ case 'Settings':
      * Restart the current level
      */
     restartLevel() {
-        // Reset player stats
+        // Reset player stats (but keep relics!)
         this.playerStats.lives = 3;
         this.playerStats.health = this.playerStats.maxHealth;
         
@@ -1134,8 +1234,8 @@ case 'Settings':
         this.levelLoader.currentCheckpoint = 0;
         this.levelLoader.collectedItems.clear();
         
-        // Clear and reinitialize collectibles
-        this.collectiblesManager.init(this.currentLevel);
+        // Clear and reinitialize collectibles with relic check
+        this.initializeCollectiblesWithRelicCheck();
         
         // Clear and reinitialize enemies
         if (window.enemyManager) {
