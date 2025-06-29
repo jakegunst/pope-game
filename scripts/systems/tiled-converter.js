@@ -117,10 +117,6 @@ class TiledConverter {
         
         // Process moving platform pairs
         this.processMovingPlatforms(converted);
-
-        // At the very end of convert(), before returning
-        console.log('Level converted. Player start:', converted.playerStart);
-        console.log('Goal position:', converted.goal.position);
         
         return converted;
     }
@@ -316,6 +312,17 @@ class TiledConverter {
             const x = obj.x;
             const y = obj.y - (obj.height || 32);
             
+            // Check for special tiles FIRST (before checking objectTypeMap)
+            if (obj.gid === 50) {
+                console.log('Found exit at:', x, y);
+                converted.goal.position = { x, y };
+                return;
+            } else if (obj.gid === 51) {
+                console.log('Found player spawn at:', x, y);
+                converted.playerStart = { x, y };
+                return;
+            }
+            
             // Check if it's a special object by name
             if (obj.name === 'playerStart' || obj.name === 'player_spawn') {
                 converted.playerStart = { x, y };
@@ -330,16 +337,6 @@ class TiledConverter {
             // Map GID to entity type
             const entityDef = this.objectTypeMap[obj.gid];
             if (!entityDef) {
-                // Check for special tiles placed as objects
-                if (obj.gid === 50) {
-    console.log('Found exit at:', x, y);
-    converted.goal.position = { x, y };
-    return;
-} else if (obj.gid === 51) {
-    console.log('Found player spawn at:', x, y);
-    converted.playerStart = { x, y };
-    return;
-}
                 console.warn('Unknown object GID:', obj.gid);
                 return;
             }
