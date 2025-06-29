@@ -531,6 +531,9 @@ class GameEngine {
     }
 
    render() {
+    // Add this debug line
+    console.log('Current state:', this.currentState);
+    
     // Clear screen
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
@@ -538,6 +541,7 @@ class GameEngine {
     if ((this.currentState === this.states.START_SCREEN || 
          this.currentState === this.states.MENU ||
          this.currentState === this.states.SETTINGS ||
+         this.currentState === this.states.LEVEL_SELECT ||  // <-- Make sure this line exists
          this.currentState === this.states.RELICS_CACHE ||
          this.currentState === this.states.CREDITS) && this.menuScreens) {
         this.menuScreens.render();
