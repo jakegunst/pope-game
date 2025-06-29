@@ -5,44 +5,49 @@ class TiledConverter {
         this.tileSize = 32;
         
         // Map Tiled tile IDs to platform types
-        // You'll need to define which tiles are which type
         this.tilePlatformTypes = {
-            // Solid tiles (brick, concrete, etc)
+            // Solid tiles (ruins)
             1: 'solid', 2: 'solid', 3: 'solid', 4: 'solid',
-            9: 'solid', 10: 'solid', 11: 'solid', 12: 'solid',
+            
+            // One-way platforms (tree branches)
+            9: 'oneway', 10: 'oneway', 11: 'oneway', 12: 'oneway',
+            
+            // Solid tiles (ground)
             17: 'solid', 18: 'solid', 19: 'solid', 20: 'solid',
             
-            // One-way platforms
-            5: 'oneway', 6: 'oneway', 7: 'oneway', 8: 'oneway',
-            
             // Bouncy platforms
-            13: 'bouncy_platform', 14: 'bouncy_platform',
+            41: 'bouncy_platform', 42: 'very_bouncy_platform',
             
-            // Moving platforms (you'd define these in Tiled with custom properties)
-            21: 'platform_r_slow', 22: 'platform_l_slow',
-            
-            // Add more tile ID mappings as needed
+            // Falling platform
+            49: 'falling_platform'
         };
         
         // Map Tiled object types to game entities
         this.objectTypeMap = {
-            // Collectibles (GID from your sprite sheet)
-            65: { type: 'leaves', category: 'collectible' },
-            66: { type: 'tithe', category: 'collectible' },
-            67: { type: 'beer', category: 'collectible' },
-            68: { type: 'relic', category: 'collectible' },
+            // Collectibles
+            5: { type: 'tithe', category: 'collectible' },
+            6: { type: 'beer', category: 'collectible' },
+            7: { type: 'leaves', category: 'collectible' },
+            8: { type: 'relic', category: 'collectible' },
             
             // Enemies
-            69: { type: 'walker', category: 'enemy', config: { variant: 'normal' } },
-            70: { type: 'walker', category: 'enemy', config: { variant: 'fast' } },
-            71: { type: 'walker', category: 'enemy', config: { variant: 'strong' } },
-            72: { type: 'flyer', category: 'enemy', config: { flyPattern: 'sine' } },
+            57: { type: 'flyer', category: 'enemy', config: { flyPattern: 'sine' } },
+            58: { type: 'walker', category: 'enemy', config: { variant: 'normal' } },
+            59: { type: 'walker', category: 'enemy', config: { variant: 'fast' } },
+            60: { type: 'walker', category: 'enemy', config: { variant: 'strong' } },
             
             // Hazards
-            41: { type: 'dibs_chair', category: 'hazard' },
-            42: { type: 'construction_cone', category: 'hazard' },
-            43: { type: 'rat_hole', category: 'hazard' },
+            43: { type: 'damage_tile', category: 'hazard', config: { damage: 25 } },
+            44: { type: 'death_tile', category: 'hazard', config: { damage: 100 } },
+            52: { type: 'bottomless_pit', category: 'hazard', config: { instant_death: true } },
+            
+            // Special tiles
+            50: { type: 'level_exit', category: 'special' },
+            51: { type: 'player_spawn', category: 'special' }
         };
+        
+        // Track moving platform pairs
+        this.movingPlatformPairs = new Map();
     }
     
     /**
@@ -70,6 +75,7 @@ class TiledConverter {
             hazards: [],
             checkpoints: [],
             decorations: [],
+            movingPlatforms: [],
             
             // Parse from Tiled data
             background: this.parseBackgrounds(tiledData),
@@ -91,8 +97,11 @@ class TiledConverter {
         tiledData.layers.forEach(layer => {
             switch (layer.type) {
                 case 'tilelayer':
-                    if (layer.name === 'platforms') {
+                    if (layer.name === 'Platforms' || layer.name === 'platforms') {
                         converted.platforms = this.parseTileLayer(layer, tiledData);
+                    } else if (layer.name === 'Hazards' || layer.name === 'hazards') {
+                        // Parse hazard tiles separately
+                        this.parseHazardTiles(layer, converted);
                     }
                     break;
                     
@@ -105,6 +114,9 @@ class TiledConverter {
                     break;
             }
         });
+        
+        // Process moving platform pairs
+        this.processMovingPlatforms(converted);
         
         return converted;
     }
@@ -128,8 +140,11 @@ class TiledConverter {
                 // Skip empty tiles or already processed
                 if (tileId === 0 || processed.has(index)) continue;
                 
+                // Skip tiles that aren't platforms
+                if (!this.tilePlatformTypes[tileId]) continue;
+                
                 // Get platform type from tile ID
-                const platformType = this.tilePlatformTypes[tileId] || 'solid';
+                const platformType = this.tilePlatformTypes[tileId];
                 
                 // Try to create larger rectangles by merging adjacent tiles
                 const rect = this.expandRectangle(x, y, width, layer.height, data, processed, tileId);
@@ -146,6 +161,111 @@ class TiledConverter {
         }
         
         return platforms;
+    }
+    
+    /**
+     * Parse hazard tiles from a tile layer
+     */
+    parseHazardTiles(layer, converted) {
+        const width = layer.width;
+        const data = layer.data;
+        
+        for (let y = 0; y < layer.height; y++) {
+            for (let x = 0; x < width; x++) {
+                const index = y * width + x;
+                const tileId = data[index];
+                
+                if (tileId === 0) continue;
+                
+                // Check if it's a hazard tile
+                if (tileId === 43 || tileId === 44 || tileId === 52) {
+                    const hazardDef = this.objectTypeMap[tileId];
+                    if (hazardDef && hazardDef.category === 'hazard') {
+                        converted.hazards.push({
+                            x: x * this.tileSize,
+                            y: y * this.tileSize,
+                            width: this.tileSize,
+                            height: this.tileSize,
+                            type: hazardDef.type,
+                            config: hazardDef.config || {}
+                        });
+                    }
+                }
+                
+                // Check for moving platform markers
+                if (tileId >= 25 && tileId <= 28) {
+                    // Start markers
+                    const direction = ['right', 'left', 'up', 'down'][tileId - 25];
+                    this.movingPlatformPairs.set(`${x},${y}`, {
+                        type: 'start',
+                        direction: direction,
+                        x: x * this.tileSize,
+                        y: y * this.tileSize
+                    });
+                } else if (tileId >= 33 && tileId <= 36) {
+                    // End markers
+                    const direction = ['right', 'left', 'up', 'down'][tileId - 33];
+                    this.movingPlatformPairs.set(`${x},${y}`, {
+                        type: 'end',
+                        direction: direction,
+                        x: x * this.tileSize,
+                        y: y * this.tileSize
+                    });
+                }
+            }
+        }
+    }
+    
+    /**
+     * Process moving platform pairs
+     */
+    processMovingPlatforms(converted) {
+        const starts = [];
+        const ends = [];
+        
+        // Separate starts and ends
+        this.movingPlatformPairs.forEach(marker => {
+            if (marker.type === 'start') {
+                starts.push(marker);
+            } else {
+                ends.push(marker);
+            }
+        });
+        
+        // Match starts with ends based on direction
+        starts.forEach(start => {
+            // Find the nearest end marker with the same direction
+            const matchingEnds = ends.filter(end => end.direction === start.direction);
+            
+            if (matchingEnds.length > 0) {
+                // Find the closest one
+                let closestEnd = matchingEnds[0];
+                let minDistance = Math.abs(closestEnd.x - start.x) + Math.abs(closestEnd.y - start.y);
+                
+                matchingEnds.forEach(end => {
+                    const distance = Math.abs(end.x - start.x) + Math.abs(end.y - start.y);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestEnd = end;
+                    }
+                });
+                
+                // Create moving platform
+                converted.movingPlatforms.push({
+                    x: start.x,
+                    y: start.y,
+                    width: this.tileSize * 2, // Default platform size
+                    height: this.tileSize,
+                    startX: start.x,
+                    startY: start.y,
+                    endX: closestEnd.x,
+                    endY: closestEnd.y,
+                    speed: 100, // pixels per second
+                    direction: start.direction,
+                    type: 'moving_platform'
+                });
+            }
+        });
     }
     
     /**
@@ -192,13 +312,13 @@ class TiledConverter {
             const x = obj.x;
             const y = obj.y - (obj.height || 32);
             
-            // Check if it's a special object
-            if (obj.name === 'playerStart') {
+            // Check if it's a special object by name
+            if (obj.name === 'playerStart' || obj.name === 'player_spawn') {
                 converted.playerStart = { x, y };
                 return;
             }
             
-            if (obj.name === 'levelExit' || obj.name === 'pequods') {
+            if (obj.name === 'levelExit' || obj.name === 'pequods' || obj.name === 'level_exit') {
                 converted.goal.position = { x, y };
                 return;
             }
@@ -206,6 +326,14 @@ class TiledConverter {
             // Map GID to entity type
             const entityDef = this.objectTypeMap[obj.gid];
             if (!entityDef) {
+                // Check for special tiles placed as objects
+                if (obj.gid === 50) {
+                    converted.goal.position = { x, y };
+                    return;
+                } else if (obj.gid === 51) {
+                    converted.playerStart = { x, y };
+                    return;
+                }
                 console.warn('Unknown object GID:', obj.gid);
                 return;
             }
@@ -236,6 +364,7 @@ class TiledConverter {
                     break;
                     
                 case 'hazard':
+                    entity.config = entityDef.config || {};
                     converted.hazards.push(entity);
                     break;
             }
