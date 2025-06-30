@@ -22,19 +22,22 @@ class CollectiblesManager {
         
         // Load sprite sheet
         this.spriteSheet = new Image();
-        this.spriteSheet.src = 'assets/images/tiles/collectibles-and-enemies.png';
+        this.spriteSheet.src = 'assets/images/tiles/collectibles.png';
         this.spriteSheet.onload = () => {
             console.log('Collectibles sprite sheet loaded');
         };
         
         // Sprite positions on the sheet (based on your image)
-        // Each sprite is 32x32 pixels
+        // Each sprite is 32x32 pixels with 4 frames arranged vertically
         this.sprites = {
-            leaf: { x: 0, y: 0, width: 32, height: 32 },      // Green leaf
-            coin: { x: 32, y: 0, width: 32, height: 32 },     // Gold coin
-            health: { x: 64, y: 0, width: 32, height: 32 },   // Heart/health
-            relic: { x: 96, y: 0, width: 32, height: 32 }     // Brown relic
+            leaf: { x: 0, y: 0, width: 32, height: 32, frames: 4 },      // Green leaves - column 1
+            coin: { x: 32, y: 0, width: 32, height: 32, frames: 4 },     // Gold coin - column 2
+            health: { x: 64, y: 0, width: 32, height: 32, frames: 4 },   // Beer/health - column 3
+            relic: { x: 96, y: 0, width: 32, height: 32, frames: 4 }     // Cross/relic - column 4
         };
+        
+        // Animation settings
+        this.animationSpeed = 0.1; // How fast sprites animate
         
         // Collectible types configuration
         this.collectibleTypes = {
@@ -164,6 +167,7 @@ class CollectiblesManager {
             value: config.value,
             collected: false,
             animationOffset: Math.random() * Math.PI * 2, // Random start phase
+            spriteFrame: 0, // Current animation frame
             ...properties
         };
         
@@ -181,6 +185,16 @@ class CollectiblesManager {
         this.collectibles.forEach(item => {
             if (!item.collected) {
                 this.updateAnimation(item);
+                
+                // Update sprite animation frame
+                const config = this.collectibleTypes[item.type];
+                if (config.sprite) {
+                    const sprite = this.sprites[config.sprite];
+                    if (sprite.frames > 1) {
+                        // Animate through frames
+                        item.spriteFrame = Math.floor((this.animationTimer * this.animationSpeed + item.animationOffset) % sprite.frames);
+                    }
+                }
             }
         });
         
@@ -495,7 +509,7 @@ class CollectiblesManager {
             }
             
             // Draw the collectible
-            this.drawCollectible(ctx, item.type, 0, 0, item.width, item.height);
+            this.drawCollectible(ctx, item.type, 0, 0, item.width, item.height, item.spriteFrame || 0);
             
             // Draw glow effect
             if (item.glow !== undefined) {
@@ -528,15 +542,19 @@ class CollectiblesManager {
     /**
      * Draw specific collectible type
      */
-    drawCollectible(ctx, type, x, y, width, height) {
+    drawCollectible(ctx, type, x, y, width, height, frame = 0) {
         const config = this.collectibleTypes[type];
         
         // Use sprite if available and sprite sheet is loaded
         if (config.sprite && this.spriteSheet.complete) {
             const sprite = this.sprites[config.sprite];
+            
+            // Calculate source Y position based on frame
+            const sourceY = sprite.y + (frame * sprite.height);
+            
             ctx.drawImage(
                 this.spriteSheet,
-                sprite.x, sprite.y, sprite.width, sprite.height,  // Source
+                sprite.x, sourceY, sprite.width, sprite.height,  // Source (with frame offset)
                 x, y, width, height  // Destination
             );
             return;
