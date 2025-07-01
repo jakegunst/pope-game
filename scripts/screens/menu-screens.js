@@ -448,6 +448,12 @@ class LevelSelectScreen {
                 completed: false
             },
             {
+                name: '80s Synthwave',
+                path: 'data/levels/80s-level.json',
+                description: 'Radical retro adventure',
+                completed: false
+            },
+            {
                 name: 'Peru - Machu Picchu',
                 path: 'data/levels/peru1.json',
                 description: 'Ancient ruins await',
@@ -476,8 +482,10 @@ class LevelSelectScreen {
         relicsCollected.forEach(relicId => {
             if (relicId.startsWith('chicago')) {
                 this.levels[0].completed = true;
-            } else if (relicId.startsWith('peru1')) {
+            } else if (relicId.startsWith('80s')) {
                 this.levels[1].completed = true;
+            } else if (relicId.startsWith('peru1')) {
+                this.levels[2].completed = true;
             }
         });
     }
