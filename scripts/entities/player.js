@@ -201,6 +201,9 @@ class Player {
             if (this.y > level.pixelHeight - this.height) {
                 this.y = level.pixelHeight - this.height;
                 this.speedY = Math.min(0, this.speedY);
+                // CRITICAL FIX: Set grounded when hitting bottom boundary
+                this.isGrounded = true;
+                this.coyoteTime = 0;
             }
         }
         
