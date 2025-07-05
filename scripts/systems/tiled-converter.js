@@ -102,6 +102,9 @@ class TiledConverter {
                     } else if (layer.name === 'Hazards' || layer.name === 'hazards') {
                         // Parse hazard tiles separately
                         this.parseHazardTiles(layer, converted);
+                    } else {
+                        // Check any other tile layer for special tiles (exit, spawn, etc.)
+                        this.parseHazardTiles(layer, converted);
                     }
                     break;
                     
@@ -176,6 +179,23 @@ class TiledConverter {
                 const tileId = data[index];
                 
                 if (tileId === 0) continue;
+                
+                // Check for special tiles (exit and spawn)
+                if (tileId === 50) {
+                    console.log('Found exit tile at:', x * this.tileSize, y * this.tileSize);
+                    converted.goal.position = { 
+                        x: x * this.tileSize, 
+                        y: y * this.tileSize 
+                    };
+                    continue;
+                } else if (tileId === 51) {
+                    console.log('Found player spawn tile at:', x * this.tileSize, y * this.tileSize);
+                    converted.playerStart = { 
+                        x: x * this.tileSize, 
+                        y: y * this.tileSize 
+                    };
+                    continue;
+                }
                 
                 // Check if it's a hazard tile
                 if (tileId === 43 || tileId === 44 || tileId === 52) {
