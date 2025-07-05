@@ -4,7 +4,7 @@
  "layers":[
         {
          "id":7,
-         "image":"../../assets/images/backgrounds/80s-background.png",
+         "image":"/pope-game/assets/images/backgrounds/80s-background.png",
          "imageheight":1024,
          "imagewidth":1536,
          "name":"background",
