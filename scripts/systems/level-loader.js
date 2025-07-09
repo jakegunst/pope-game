@@ -55,7 +55,10 @@ class LevelLoader {
                 // Convert Tiled format to game format
                 const converter = new TiledConverter();
                 const convertedLevel = converter.convert(levelData);
-                
+
+                // ADD THIS DEBUG LINE HERE
+                console.log('Moving platforms in level:', convertedLevel.movingPlatforms);
+             
                 // Process as normal
                 this.currentLevel = this.processLevel(convertedLevel);
             } else {
