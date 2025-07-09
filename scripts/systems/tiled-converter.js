@@ -323,37 +323,96 @@ class TiledConverter {
         return { x: startX, y: startY, width, height };
     }
     
-    /**
-     * Parse object layer for entities
-     */
-    parseObjectLayer(layer, converted) {
-        layer.objects.forEach(obj => {
-            // Tiled uses bottom-left origin for objects, convert to top-left
-            const x = obj.x;
-            const y = obj.y - (obj.height || 32);
-            
-            // Check for special tiles FIRST (before checking objectTypeMap)
-            if (obj.gid === 50) {
-                console.log('Found exit at:', x, y);
-                converted.goal.position = { x, y };
-                return;
-            } else if (obj.gid === 51) {
-                console.log('Found player spawn at:', x, y);
-                converted.playerStart = { x, y };
+/**
+ * Parse object layer for entities
+ */
+parseObjectLayer(layer, converted) {
+    layer.objects.forEach(obj => {
+        // Tiled uses bottom-left origin for objects, convert to top-left
+        const x = obj.x;
+        const y = obj.y - (obj.height || 32);
+        
+        // Check for rectangle objects (no gid means it's a shape, not a tile)
+        if (!obj.gid) {
+            // Check if it's a platform by name or type property
+            if (obj.name === 'platform' || obj.type === 'platform' || 
+                (obj.properties && obj.properties.find(p => p.name === 'platformType'))) {
+                
+                const platform = {
+                    x: x,
+                    y: y,
+                    width: obj.width,
+                    height: obj.height,
+                    type: 'solid' // default type
+                };
+                
+                // Process custom properties
+                if (obj.properties) {
+                    const props = {};
+                    obj.properties.forEach(prop => {
+                        props[prop.name] = prop.value;
+                    });
+                    
+                    // Handle platform type
+                    if (props.platformType) {
+                        platform.type = props.platformType;
+                    }
+                    
+                    // Handle moving platform properties
+                    if (props.moveDistance || props.moveSpeed) {
+                        platform.moving = true;
+                        platform.moveDistance = props.moveDistance || 200;
+                        platform.moveSpeed = props.moveSpeed || 100;
+                        platform.moveDirection = props.moveDirection || 'horizontal';
+                        
+                        // Calculate end positions based on direction
+                        if (platform.moveDirection === 'horizontal') {
+                            platform.startX = x;
+                            platform.endX = x + platform.moveDistance;
+                            platform.startY = y;
+                            platform.endY = y;
+                        } else {
+                            platform.startX = x;
+                            platform.endX = x;
+                            platform.startY = y;
+                            platform.endY = y + platform.moveDistance;
+                        }
+                    }
+                    
+                    // Store all properties for future use
+                    platform.properties = props;
+                }
+                
+                converted.platforms.push(platform);
+                console.log('Added platform from object:', platform);
                 return;
             }
-            
-            // Check if it's a special object by name
-            if (obj.name === 'playerStart' || obj.name === 'player_spawn') {
-                converted.playerStart = { x, y };
-                return;
-            }
-            
-            if (obj.name === 'levelExit' || obj.name === 'pequods' || obj.name === 'level_exit') {
-                converted.goal.position = { x, y };
-                return;
-            }
-            
+        }
+        
+        // Check for special tiles FIRST (before checking objectTypeMap)
+        if (obj.gid === 50) {
+            console.log('Found exit at:', x, y);
+            converted.goal.position = { x, y };
+            return;
+        } else if (obj.gid === 51) {
+            console.log('Found player spawn at:', x, y);
+            converted.playerStart = { x, y };
+            return;
+        }
+        
+        // Check if it's a special object by name
+        if (obj.name === 'playerStart' || obj.name === 'player_spawn') {
+            converted.playerStart = { x, y };
+            return;
+        }
+        
+        if (obj.name === 'levelExit' || obj.name === 'pequods' || obj.name === 'level_exit') {
+            converted.goal.position = { x, y };
+            return;
+        }
+        
+        // Only check objectTypeMap if obj has a gid
+        if (obj.gid) {
             // Map GID to entity type
             const entityDef = this.objectTypeMap[obj.gid];
             if (!entityDef) {
@@ -391,9 +450,9 @@ class TiledConverter {
                     converted.hazards.push(entity);
                     break;
             }
-        });
-    }
-    
+        }
+    });
+}
     /**
      * Parse image layers for parallax backgrounds
      */
